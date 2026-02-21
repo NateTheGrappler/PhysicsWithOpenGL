@@ -37,6 +37,9 @@ void Engine::init()
 	}
 	glViewport(0, 0, m_HEIGHT, m_WIDTH);
 
+	//creater renderer
+	m_renderer = std::make_shared<Renderer>();
+
 	//change the scene pointer to be the new menu scene
 	changeScene("MENU", std::make_shared<Scene_Menu>(*this), false);
 }
