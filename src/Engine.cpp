@@ -1,4 +1,5 @@
 #include "Engine.h"
+#include "Scene_Menu.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -18,6 +19,7 @@ void Engine::init()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	m_window = glfwCreateWindow(m_WIDTH, m_HEIGHT, "Physics Simulations", NULL, NULL);
 
+	//error handling for window also setting some basic stuff for the window
 	if (m_window == NULL)
 	{
 		std::cout << "Failed to create the window you goober" << std::endl;
@@ -28,12 +30,15 @@ void Engine::init()
 	glfwSetFramebufferSizeCallback(m_window, framebuffer_size_callback);
 
 	//load GLAD and set viewport
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))                                             //Initialize the glad library
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))                                         
 	{
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return ;
 	}
 	glViewport(0, 0, m_HEIGHT, m_WIDTH);
+
+	//change the scene pointer to be the new menu scene
+	changeScene("MENU", std::make_shared<Scene_Menu>(*this), false);
 }
 
 void Engine::run()
@@ -48,7 +53,7 @@ void Engine::run()
 		glfwPollEvents();
 
 		//run the update scene for the scene that you currently ahve
-		//currentScene()->update();
+		currentScene()->update();
 
 		glfwSwapBuffers(m_window);
 	}

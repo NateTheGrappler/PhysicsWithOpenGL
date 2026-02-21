@@ -1,3 +1,5 @@
+#pragma once
+
 #define GLFW_INCLUDE_NONE
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -36,4 +38,6 @@ public:
 	GLFWwindow* getWindow();
 	bool isRunning();
 	float getDeltaTime();
+	int height() const { return m_HEIGHT;};
+	int width()  const { return m_WIDTH; };
 };
