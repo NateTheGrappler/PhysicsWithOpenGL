@@ -20,7 +20,11 @@ void Scene_Menu::update()
 void Scene_Menu::sRender()
 {
     m_engine.renderer()->clear();
-    m_engine.renderer()->drawRect(glm::vec2(400, 300), glm::vec2(100, 50), glm::vec3(0.5f, 0.0f, 0.5f));
+
+    // Draw a small rectangle at the center
+    float angle = (float)glfwGetTime() * 1.5f;
+    m_engine.renderer()->drawRect(glm::vec3(0, 0, -2.0f), glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), angle);
+
 }
 void Scene_Menu::onEnd()
 {

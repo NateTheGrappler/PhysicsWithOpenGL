@@ -14,9 +14,9 @@ class Renderer
 {
 private:
 	//all of the data sent to the gpu
-	unsigned int m_circleVAO, m_circleVBO, m_circleIBO;
+	unsigned int m_circleVAO, m_circleVBO, m_circleIBO, m_circleIndexCount;
 	unsigned int m_rectVAO,   m_rectVBO,   m_rectIBO;
-	unsigned int m_lineVAO,   m_lineVBO,   m_lineIBO;
+	unsigned int m_lineVAO,   m_lineVBO;
 
 	//shader program
 	Shader m_normalShader;
@@ -31,15 +31,28 @@ public:
 
 	void init();
 
+	//-------------------------------------FUNCTIONS DEALING WITH 2D--------------------------------------------
+	
 	//basic 2d shape inits (called on init of this class)
-	void initCircle();
+	void initCircle(int segments = 64);
 	void initRectangle();
 	void initLine();
 
 	//draw call functions that take the data and output it to the screen for 2d items
-	void drawCircle(glm::vec2 position, float radius,   glm::vec3 color, Texture* texture = nullptr);
-	void drawRect(  glm::vec2 position, glm::vec2 size, glm::vec3 color, Texture* texture = nullptr);
+	void drawCircle(glm::vec3 position, float radius,   glm::vec3 color, glm::vec3 roation = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, Texture* texture = nullptr);
+	void drawRect(  glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 roation = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, Texture* texture = nullptr);
 	void drawLine(  glm::vec2 start,    glm::vec2(),    glm::vec3 color, Texture* texture = nullptr);
+
+
+	//-------------------------------------FUNCTIONS DEALING WITH 3D--------------------------------------------
+	void initSphere(int sectors, int stacks);
+	void initCube();
+	//void initLine(); maybe have like a plane call to demonstrate the distorition of spacetime?
+	
+	void drawSphere();
+	void drawCube(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 roation = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, Texture* texture = nullptr);
+
+
 
 	//background functions
 	void clear();

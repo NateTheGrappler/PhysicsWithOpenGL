@@ -35,7 +35,7 @@ void Engine::init()
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return ;
 	}
-	glViewport(0, 0, m_HEIGHT, m_WIDTH);
+	glViewport(0, 0, m_WIDTH, m_HEIGHT);
 
 	//creater renderer
 	m_renderer = std::make_shared<Renderer>();
