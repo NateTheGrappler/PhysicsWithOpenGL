@@ -7,7 +7,7 @@
 #include <memory>
 #include <map>
 
-#include "Scene.h"
+class Scene;
 
 using SceneMap = std::map<std::string, std::shared_ptr<Scene>>;
 
