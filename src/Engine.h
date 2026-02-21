@@ -1,0 +1,39 @@
+#define GLFW_INCLUDE_NONE
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
+#include <iostream>
+#include <vector>
+#include <memory>
+#include <map>
+
+#include "Scene.h"
+
+using SceneMap = std::map<std::string, std::shared_ptr<Scene>>;
+
+class Engine
+{
+private:
+	GLFWwindow* m_window;
+	int         m_WIDTH = 800;
+	int         m_HEIGHT = 600;
+	bool        m_running = true;
+	std::string m_currentSceneName;
+	SceneMap    m_SceneMap;
+
+	float m_deltaTime = 0.0f;
+	float m_lastFrame = 0.0f;
+
+public:
+
+	Engine();
+
+	void init();
+	void run();
+	std::shared_ptr<Scene> currentScene();
+	void changeScene(const std::string& sceneName, std::shared_ptr<Scene> scene, bool endCurrentScene);
+
+	GLFWwindow* getWindow();
+	bool isRunning();
+	float getDeltaTime();
+};
