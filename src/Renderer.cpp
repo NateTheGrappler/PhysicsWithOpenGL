@@ -1,7 +1,7 @@
 #include "Renderer.h"
 
 Renderer::Renderer()
-	:m_normalShader("src/res/shader/basic.shader"), m_camera(glm::vec3(0.0f, 0.0f, 3.0f))
+	:m_normalShader("src/res/shader/basic.shader"), m_camera(glm::vec3(0.0f, 0.0f, 0.0f))
 {
 	init();
 }
@@ -256,8 +256,6 @@ void Renderer::initSphere(int sectors, int stacks)
 			//texture
 			verticies.push_back((float)j / sectors);
 			verticies.push_back((float)i / stacks);
-
-
 		}
 	}
 
@@ -307,7 +305,6 @@ void Renderer::initSphere(int sectors, int stacks)
 
 	glBindVertexArray(0);
 }
-
 void Renderer::initCube()
 {
 	float verticies[] =

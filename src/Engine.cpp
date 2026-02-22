@@ -1,5 +1,6 @@
 #include "Engine.h"
 #include "Scene_Menu.h"
+#include "Action.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn);
@@ -137,6 +138,28 @@ void Engine::sUserInput(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 	{
 		m_renderer->getCamera().ProcessKeyboard(DOWN, m_deltaTime);
+	}
+
+	//scene related key presses
+	const ActionMap& actionMap = currentScene()->getActionMap();
+	for (ActionMap::const_iterator it = actionMap.begin(); it != actionMap.end(); ++it)
+	{
+		int key = it->first;
+		const std::string& actionName = it->second;
+
+		int currentState = glfwGetKey(window, key);
+		int prevState    = m_prevKeyStates.count(key) ? m_prevKeyStates[key] : GLFW_RELEASE;
+
+		if (currentState == GLFW_PRESS && prevState == GLFW_RELEASE)
+		{
+			currentScene()->sUserInput(Action(actionName, "PRESSED"));
+		}
+		else if (currentState == GLFW_RELEASE && prevState == GLFW_PRESS)
+		{
+			currentScene()->sUserInput(Action(actionName, "RELEASED"));
+		}
+
+		m_prevKeyStates[key] = currentState;
 	}
 }
 

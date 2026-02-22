@@ -139,6 +139,7 @@
     <ClCompile Include="src\vendor\glad.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Action.hpp" />
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\Engine.h" />
     <ClInclude Include="src\Renderer.h" />

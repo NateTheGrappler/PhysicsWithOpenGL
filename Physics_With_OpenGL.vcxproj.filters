@@ -65,6 +65,9 @@
     <ClInclude Include="src\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Action.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\res\shader\basic.shader" />
