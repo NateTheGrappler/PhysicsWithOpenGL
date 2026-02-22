@@ -20,6 +20,7 @@ void Scene_Menu::update()
 void Scene_Menu::sRender()
 {
     m_engine.renderer()->clear();
+    m_engine.renderer()->updateCameraView();
 
     //set up mathimatical positions for a circle
 
@@ -31,8 +32,6 @@ void Scene_Menu::sRender()
 
         m_engine.renderer()->drawCube(glm::vec3(x, 0, -5.0f), glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     }
-
-
 
 
    //float angle = (float)glfwGetTime() * 1.5f;

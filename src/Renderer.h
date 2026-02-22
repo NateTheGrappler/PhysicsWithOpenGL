@@ -63,5 +63,6 @@ public:
 	void clear();
 	void setBackgroundColor(glm::vec4 color);
 	void updateCameraView();
+	Camera& getCamera() { return m_camera; }
 
 };

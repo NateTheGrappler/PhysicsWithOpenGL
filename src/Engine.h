@@ -34,6 +34,8 @@ public:
 	std::shared_ptr<Scene> currentScene();
 	void changeScene(const std::string& sceneName, std::shared_ptr<Scene> scene, bool endCurrentScene);
 
+	void sUserInput(GLFWwindow* window);
+
 	GLFWwindow* getWindow();
 	bool isRunning();
 	float getDeltaTime();

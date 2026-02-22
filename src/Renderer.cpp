@@ -201,9 +201,6 @@ void Renderer::drawRect(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm
 	}
 
 	//set up matrix stuff
-	//m_projection = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f, -1.0f, 1.0f);
-	m_view = glm::mat4(1.0f);
-
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(position.x, position.y, position.z));
 	model = glm::scale    (model, glm::vec3(size.x, size.y, 1.0f));
@@ -412,9 +409,6 @@ void Renderer::drawSphere(glm::vec3 position, float radius, glm::vec3 color, glm
 	}
 
 	//set up matrix stuff
-	//m_projection = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f, -1.0f, 1.0f);
-	m_view = glm::mat4(1.0f);
-
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(position.x, position.y, position.z));
 	model = glm::scale(model, glm::vec3(radius, radius, radius));
@@ -450,9 +444,6 @@ void Renderer::drawCube(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm
 	}
 
 	//set up matrix stuff
-	//m_projection = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f, -1.0f, 1.0f);
-	m_view = glm::mat4(1.0f);
-
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(position.x, position.y, position.z));
 	model = glm::scale(model, glm::vec3(size.x, size.y, 1.0f));
