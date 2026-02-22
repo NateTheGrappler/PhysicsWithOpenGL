@@ -6,6 +6,7 @@
 
 #include "shader.h"
 #include "texture.h"
+#include "Camera.h"
 
 #include <vector>
 #include <glm\detail\type_vec.hpp>
@@ -17,6 +18,11 @@ private:
 	unsigned int m_circleVAO, m_circleVBO, m_circleIBO, m_circleIndexCount;
 	unsigned int m_rectVAO,   m_rectVBO,   m_rectIBO;
 	unsigned int m_lineVAO,   m_lineVBO;
+
+	unsigned int m_sphereVAO, m_sphereVBO, m_sphereIBO, m_sphereIndexCount;
+	unsigned int m_cubeVAO,   m_cubeVBO,   m_cubeIBO,   m_cubeIndexCount;
+
+	Camera m_camera;
 
 	//shader program
 	Shader m_normalShader;
@@ -43,18 +49,19 @@ public:
 	void drawRect(  glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 roation = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, Texture* texture = nullptr);
 	void drawLine(  glm::vec2 start,    glm::vec2(),    glm::vec3 color, Texture* texture = nullptr);
 
-
 	//-------------------------------------FUNCTIONS DEALING WITH 3D--------------------------------------------
-	void initSphere(int sectors, int stacks);
+	void initSphere(int sectors = 36, int stacks = 18);
 	void initCube();
 	//void initLine(); maybe have like a plane call to demonstrate the distorition of spacetime?
 	
-	void drawSphere();
+	void drawSphere(glm::vec3 position, float radius, glm::vec3 color, glm::vec3 rotate = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, Texture* texture = nullptr);
 	void drawCube(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 roation = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, Texture* texture = nullptr);
 
 
 
-	//background functions
+	//Additional functions
 	void clear();
 	void setBackgroundColor(glm::vec4 color);
+	void updateCameraView();
+
 };
