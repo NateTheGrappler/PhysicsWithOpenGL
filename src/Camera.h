@@ -38,6 +38,7 @@ public:
 	virtual void setPerspective () = 0;
 	virtual void enableMouse(GLFWwindow* window) = 0;
 	virtual void disableMouse(GLFWwindow* window) = 0;
+	virtual void printPosition() = 0;
 	virtual glm::mat4 getViewMatrix() = 0;
 	virtual glm::mat4 getProjectionMatrix() = 0;
 	virtual ~Camera() = default;
@@ -76,6 +77,7 @@ public:
 	void setOrthographic(float left, float right, float bottom, float top, float near, float far) override;
 	void setPerspective() override;
 	void setPosition(const glm::vec3& position) override;
+	void printPosition() override;
 };
 
 class flyCamera : public Camera
@@ -118,6 +120,8 @@ public:
 	void updateCameraVectors();
 	void enableMouse(GLFWwindow* window)  override;
 	void disableMouse(GLFWwindow* window) override;
+	void printPosition() override;
+
 
 	//TODO: find a way to make zooming in possible
 };

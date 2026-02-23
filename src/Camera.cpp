@@ -1,5 +1,6 @@
 
 #include "Camera.h"
+#include <iostream>
 
 //-----------------------------Static Camera Functions------------------------------
 
@@ -43,6 +44,11 @@ void staticCamera::setPosition(const glm::vec3& position)
 {
 	m_position = position;
 	m_view = glm::lookAt(m_position, m_target, m_up);
+}
+
+void staticCamera::printPosition()
+{
+	std::cout << "X: " << m_position.x << " Y: " << m_position.y << " Z: " << m_position.z << std::endl;
 }
 
 void staticCamera::enableMouse(GLFWwindow* window)
@@ -164,4 +170,9 @@ void flyCamera::enableMouse(GLFWwindow* window)
 void flyCamera::disableMouse(GLFWwindow* window)
 {
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
+void flyCamera::printPosition()
+{
+	std::cout << "X: " << m_cameraPos.x << " Y: " << m_cameraPos.y << " Z: " << m_cameraPos.z << std::endl;
 }
