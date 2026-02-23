@@ -19,7 +19,6 @@ void Scene_Menu::init()
     //init the camera and then allow user to use mouse bc the camera is static
     m_camera = std::make_unique<staticCamera>(glm::vec3(m_currentPositions[3].x - 0.1, m_currentPositions[3].y + 1.0, m_currentPositions[3].z + 4.5),
         glm::vec3(m_currentPositions[3].x + 0.1f, m_currentPositions[3].y, m_currentPositions[3].z));
-    m_camera->setPerspective();
     glfwSetInputMode(m_engine.getWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
     
@@ -77,12 +76,13 @@ void Scene_Menu::sRender()
     //try out some fluid simulation maybe
 
 
-    m_camera->setOrthographic(-10.0f, 10.0f, -10.0f, 10.0f, 0, 5.0f);
+    m_camera->setOrthographic(0.0f, 800.0f, 0.0f, 600.0f, -1.0f, 1.0f);
     m_engine.renderer()->updateMatrix(m_camera->getProjectionMatrix(), m_camera->getViewMatrix());
 
     //draw the hud sort of an ordeal
-    //m_engine.renderer()->drawCircle(glm::vec3(2.0f, 1.0f, 0.0f), 0.5f, glm::vec3(0.0f, 1.0f, 0.0f));
-    m_engine.renderer()->drawTriangle(glm::vec3(7.0f, 0.0f, 0.0f), glm::vec2(3.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+    m_engine.renderer()->drawTriangle(glm::vec3(720.0f, 75.0f, 0.0f),  glm::vec2(80.0f, 80.0f), glm::vec3(0.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(-90.0f));
+    m_engine.renderer()->drawTriangle(glm::vec3(80.0f,  75.0f, 0.0f),  glm::vec2(80.0f, 80.0f), glm::vec3(0.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(90.0f));
+    m_engine.renderer()->drawRect    (glm::vec3(400.0f, 525.0f, 0.0f), glm::vec2(700.0f,100.0f), glm::vec3(0.0f, 1.0f, 1.0f));
 
 }
 
@@ -123,7 +123,8 @@ void Scene_Menu::sUserInput(const Action& action)
 
                 //create the static camera, and enable mouse
                 m_camera->enableMouse(m_engine.getWindow());
-                m_camera = std::make_unique<staticCamera>(glm::vec3(0.0f, 0.0f, 0.0f));
+                m_camera = std::make_unique<staticCamera>(glm::vec3(m_currentPositions[3].x - 0.1, m_currentPositions[3].y + 1.0, m_currentPositions[3].z + 4.5),
+                    glm::vec3(m_currentPositions[3].x + 0.1f, m_currentPositions[3].y, m_currentPositions[3].z));
                 m_cameraIsStatic = true;
             }
         }
@@ -155,7 +156,7 @@ void Scene_Menu::calculateBasePositions()
         float z = (sin(angle) * m_radius) - (m_radius * 2);
 
         //push back to a base position
-        m_currentPositions.push_back(glm::vec3(x - 1, 0, z));
+        m_currentPositions.push_back(glm::vec3(x + 1.5, 0, z));
     }
 }
 void Scene_Menu::applyRotation()

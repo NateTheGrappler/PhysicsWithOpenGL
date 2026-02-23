@@ -20,6 +20,9 @@ void staticCamera::processInput(GLFWwindow* window, float deltaTime)
 
 glm::mat4 staticCamera::getViewMatrix()
 {
+	if (m_isOrtho)
+		return glm::mat4(1.0f); // identity - no camera transform for UI
+
 	return glm::lookAt(m_position, m_target, m_up);
 }
 
@@ -120,6 +123,9 @@ void flyCamera::processInput(GLFWwindow* window, float deltaTime)
 
 glm::mat4 flyCamera::getViewMatrix()
 {
+	if (m_isOrtho)
+		return glm::mat4(1.0f); // identity - no camera transform for UI
+
 	return glm::lookAt(m_cameraPos, m_cameraPos + m_cameraFront, m_cameraUp);
 }
 
