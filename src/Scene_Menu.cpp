@@ -8,12 +8,19 @@ Scene_Menu::Scene_Menu(Engine& gameEngine)
 
 void Scene_Menu::init()
 {
+    //preset the renderer to set the scene view
     m_engine.renderer()->setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
-    
+
+    //init the camera and then allow user to use mouse bc the camera is static
+    m_camera = std::make_unique<staticCamera>(glm::vec3(0.0f, 0.0, 2.0f));
+    glfwSetInputMode(m_engine.getWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
     
     //TODO: register in function input
-    registerAction(GLFW_KEY_R, "ROTATE_CLOCKWISE");
-    registerAction(GLFW_KEY_T, "ROTATE_COUNTER_CLOCKWISE");
+    registerAction(GLFW_KEY_LEFT,  "ROTATE_CLOCKWISE");
+    registerAction(GLFW_KEY_RIGHT, "ROTATE_COUNTER_CLOCKWISE");
+    registerAction(GLFW_KEY_P,     "CHANGE_PERSPECTIVE");
+    registerAction(GLFW_KEY_L,     "CHANGE_STATIC");
 
     //set the initial rotation positions and also apply a rotation of 0 to initialize all vectors
     calculateBasePositions();
@@ -27,16 +34,13 @@ void Scene_Menu::update()
 void Scene_Menu::sRender()
 {
     m_engine.renderer()->clear();
-    m_engine.renderer()->updateCameraView();
+    m_engine.renderer()->updateMatrix(m_camera->getProjectionMatrix(), m_camera->getViewMatrix());
+    m_camera->processInput(m_engine.getWindow(), m_engine.getDeltaTime());
 
-    if (m_isRotating)
-    {
-        applyRotation();
-        std::cout << "APPLYING ROTATION" << std::endl;
-    }
-    else { m_rotationProgress = 0.0f; }
+    if (m_isRotating)     { applyRotation(); }
+    else                  { m_rotationProgress = 0.0f; }
 
-    for (int i = 0; i < m_currentPositions.size(); i++)
+    for (int i = 0; i < m_currentPositions.size() - 1; i++)
     {
         float rotateAngle = glfwGetTime();
 
@@ -44,13 +48,15 @@ void Scene_Menu::sRender()
         if (i % 2 == 0)
         {
             m_engine.renderer()->drawCube(m_currentPositions[i], glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle);
-            //m_engine.renderer()->drawSphere(glm::vec3(x, 0, z - radius * 2), 0.5f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle);
         }
         else
         {
             m_engine.renderer()->drawSphere(m_currentPositions[i], 0.5f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle);
         }
     }
+
+    m_engine.renderer()->drawCircle(glm::vec3(2.0f, 1.0f, 0.0f), 0.5f, glm::vec3(0.0f, 1.0f, 0.0f));
+
 }
 
 void Scene_Menu::sUserInput(const Action& action)
@@ -65,6 +71,35 @@ void Scene_Menu::sUserInput(const Action& action)
             calculateTargetPosition(action.name());
             m_isRotating = true;
         }
+        if (action.name() == "CHANGE_PERSPECTIVE")
+        {
+            std::cout << "changed perspective" << std::endl;
+            if(m_camera->m_isOrtho) { m_camera->setPerspective(); }
+            else                    { m_camera->setOrthographic(-10.0f, 10.0f, -10.0f, 10.0f, -20.0f, 20.0f); }
+            
+            
+        }
+        if (action.name() == "CHANGE_STATIC")
+        {
+            if(m_cameraIsStatic) 
+            {
+                std::cout << "changed camera fly" << std::endl;
+
+                //create the fly camera and then disable mouse
+                m_camera = std::make_unique<flyCamera>(glm::vec3(0.0f, 0.0f, 3.0f));
+                m_camera->disableMouse(m_engine.getWindow());
+                m_cameraIsStatic = false;
+            }
+            else
+            {
+                std::cout << "changed camera static" << std::endl;
+
+                //create the static camera, and enable mouse
+                m_camera->enableMouse(m_engine.getWindow());
+                m_camera = std::make_unique<staticCamera>(glm::vec3(0.0f, 0.0f, 3.0f));
+                m_cameraIsStatic = true;
+            }
+        }
 
     }
 }
@@ -72,6 +107,8 @@ void Scene_Menu::onEnd()
 {
 }
 
+
+//rotation logic
 void Scene_Menu::calculateBasePositions()
 {
     m_currentPositions.clear();
@@ -107,11 +144,9 @@ void Scene_Menu::applyRotation()
     for (int i = 0; i < m_currentPositions.size(); i++)
     {
         m_currentPositions[i] = glm::mix(m_startPositions[i], m_targetPositions[i], m_rotationProgress);
-        //m_currentPositions[i] = glm::mix(m_targetPositions[i], m_startPositions[i], m_rotationProgress);
     }
 
 }
-
 void Scene_Menu::calculateTargetPosition(const std::string& direction)
 {
     if (direction == "ROTATE_CLOCKWISE")

@@ -1,7 +1,7 @@
 #include "Renderer.h"
 
 Renderer::Renderer()
-	:m_normalShader("src/res/shader/basic.shader"), m_camera(glm::vec3(0.0f, 0.0f, 0.0f))
+	:m_normalShader("src/res/shader/basic.shader")
 {
 	init();
 }
@@ -15,9 +15,6 @@ void Renderer::init()
 
 	initCube();
 	initSphere();
-
-	m_projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
-
 
 	//init buffer dept
 	glEnable(GL_DEPTH_TEST);
@@ -468,10 +465,12 @@ void Renderer::setBackgroundColor(glm::vec4 color)
 
 }
 
-void Renderer::updateCameraView()
+void Renderer::updateMatrix(glm::mat4 perspective, glm::mat4 view)
 {
-	m_view = m_camera.getViewMatrix();
+	m_projection = perspective;
+	m_view = view;
 }
+
 
 void Renderer::clear()
 {

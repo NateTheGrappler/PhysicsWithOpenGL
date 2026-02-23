@@ -22,14 +22,14 @@ private:
 	unsigned int m_sphereVAO, m_sphereVBO, m_sphereIBO, m_sphereIndexCount;
 	unsigned int m_cubeVAO,   m_cubeVBO,   m_cubeIBO,   m_cubeIndexCount;
 
-	Camera m_camera;
-
 	//shader program
 	Shader m_normalShader;
 
 	//matricies
 	glm::mat4 m_projection;
 	glm::mat4 m_view;
+
+	bool      m_isOrtho = true;
 	
 
 public:
@@ -62,7 +62,5 @@ public:
 	//Additional functions
 	void clear();
 	void setBackgroundColor(glm::vec4 color);
-	void updateCameraView();
-	Camera& getCamera() { return m_camera; }
-
+	void updateMatrix(glm::mat4 perspective, glm::mat4 view);
 };
