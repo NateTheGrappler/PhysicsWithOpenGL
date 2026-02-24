@@ -188,7 +188,7 @@ void Renderer::initLine()
 
 //---------------------------Drawing 2D shapes------------------------------------
 
-void Renderer::drawCircle(glm::vec3 position, float radius, glm::vec3 color, glm::vec3 rotate, float angle, Texture* texture)
+void Renderer::drawCircle(glm::vec3 position, float radius, glm::vec3 color, glm::vec3 rotate, float angle, std::shared_ptr<Texture> texture)
 {
 	//use the shader
 	m_normalShader.use();
@@ -222,7 +222,7 @@ void Renderer::drawCircle(glm::vec3 position, float radius, glm::vec3 color, glm
 	glBindVertexArray(0);
 }
 
-void Renderer::drawRect(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 rotate, float angle, Texture* texture)
+void Renderer::drawRect(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 rotate, float angle, std::shared_ptr<Texture> texture)
 {
 	//use the shader
 	m_normalShader.use();
@@ -257,12 +257,12 @@ void Renderer::drawRect(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm
 	glBindVertexArray(0);
 }
 
-void Renderer::drawLine(glm::vec2 start, glm::vec2(), glm::vec3 color, Texture* texture)
+void Renderer::drawLine(glm::vec2 start, glm::vec2(), glm::vec3 color, std::shared_ptr<Texture> texture)
 {
 
 }
 
-void Renderer::drawTriangle(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 rotate, float angle, Texture* texture)
+void Renderer::drawTriangle(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 rotate, float angle, std::shared_ptr<Texture> texture)
 {
 	//use the shader
 	m_normalShader.use();
@@ -462,7 +462,7 @@ void Renderer::initCube()
 
 
 //---------------------------Drawing 3D shapes------------------------------------
-void Renderer::drawSphere(glm::vec3 position, float radius, glm::vec3 color, glm::vec3 rotate, float angle, Texture* texture)
+void Renderer::drawSphere(glm::vec3 position, float radius, glm::vec3 color, glm::vec3 rotate, float angle, std::shared_ptr<Texture> texture)
 {
 	//use the shader
 	m_normalShader.use();
@@ -497,7 +497,7 @@ void Renderer::drawSphere(glm::vec3 position, float radius, glm::vec3 color, glm
 	glBindVertexArray(0);
 }
 
-void Renderer::drawCube(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 rotate, float angle, Texture* texture)
+void Renderer::drawCube(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 rotate, float angle, std::shared_ptr<Texture> texture)
 {
 	//use the shader
 	m_normalShader.use();

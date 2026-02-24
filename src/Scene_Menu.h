@@ -33,4 +33,5 @@ public:
     void calculateBasePositions();
     void applyRotation();
     void calculateTargetPosition(const std::string& direction);
+    void checkButtonCollision(const glm::vec2& pos);
 };

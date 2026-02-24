@@ -7,6 +7,7 @@
 #include <memory>
 #include <map>
 #include <unordered_map>
+#include "AssetManager.hpp"
 
 class Scene;
 
@@ -14,15 +15,16 @@ using SceneMap = std::map<std::string, std::shared_ptr<Scene>>;
 
 class Engine
 {
-private:
-	GLFWwindow*					 m_window;
-	std::shared_ptr<Renderer>    m_renderer;
-	int							 m_WIDTH = 800;
-	int							 m_HEIGHT = 600;
-	bool						 m_running = true;
-	std::string					 m_currentSceneName;
-	SceneMap					 m_SceneMap;
-	std::unordered_map<int, int> m_prevKeyStates;
+private:						  
+	GLFWwindow*					  m_window;
+	std::shared_ptr<Renderer>     m_renderer;
+	std::shared_ptr<AssetManager> m_assets;
+	int							  m_WIDTH = 800;
+	int							  m_HEIGHT = 600;
+	bool						  m_running = true;
+	std::string					  m_currentSceneName;
+	SceneMap					  m_SceneMap;
+	std::unordered_map<int, int>  m_prevKeyStates;
 
 	float m_deltaTime = 0.0f;
 	float m_lastFrame = 0.0f;
@@ -43,5 +45,7 @@ public:
 	float getDeltaTime();
 	int height() const { return m_HEIGHT;};
 	int width()  const { return m_WIDTH; };
-	std::shared_ptr<Renderer> renderer() const { return m_renderer; }
+	std::shared_ptr<Renderer> renderer()   const { return m_renderer; }
+	std::shared_ptr<AssetManager> assets() const { return m_assets; }
+	
 };

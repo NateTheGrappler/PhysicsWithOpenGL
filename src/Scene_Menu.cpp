@@ -17,10 +17,12 @@ void Scene_Menu::init()
 
 
     //init the camera and then allow user to use mouse bc the camera is static
-    m_camera = std::make_unique<staticCamera>(glm::vec3(m_currentPositions[3].x - 0.1, m_currentPositions[3].y + 1.0, m_currentPositions[3].z + 4.5),
+    m_camera = std::make_unique<staticCamera>(glm::vec3(m_currentPositions[3].x - 0.5, m_currentPositions[3].y + 1.5, m_currentPositions[3].z + 4.5),
         glm::vec3(m_currentPositions[3].x + 0.1f, m_currentPositions[3].y, m_currentPositions[3].z));
     glfwSetInputMode(m_engine.getWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-
+    
+    //load in needed assets
+    m_engine.assets()->loadTexture("VenusDirt", "src/res/texture/VenusDirt.png");
     
     //TODO: register in function input
     registerAction(GLFW_KEY_LEFT,  "ROTATE_CLOCKWISE");
@@ -50,17 +52,17 @@ void Scene_Menu::sRender()
 
     m_camera->setPerspective();
     m_engine.renderer()->updateMatrix(m_camera->getProjectionMatrix(), m_camera->getViewMatrix());
-    m_engine.renderer()->drawCircle(m_currentPositions[0],  0.75f,                 glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle);
-    m_engine.renderer()->drawSphere(m_currentPositions[1],  0.75f,                 glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle);
-    m_engine.renderer()->drawRect  (m_currentPositions[2],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle);
-    m_engine.renderer()->drawSphere(m_currentPositions[3],  0.75f,                 glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle);
-    m_engine.renderer()->drawRect  (m_currentPositions[4],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle);
-    m_engine.renderer()->drawRect  (m_currentPositions[5],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle);
-    m_engine.renderer()->drawCube  (m_currentPositions[6],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle);
-    m_engine.renderer()->drawCube  (m_currentPositions[7],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle);
-    m_engine.renderer()->drawCircle(m_currentPositions[8],  0.75f,                 glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle);
-    m_engine.renderer()->drawRect  (m_currentPositions[9],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle);
-    m_engine.renderer()->drawRect  (m_currentPositions[10], glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle);
+    m_engine.renderer()->drawCircle(m_currentPositions[0],  0.75f,                 glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
+    m_engine.renderer()->drawSphere(m_currentPositions[1],  0.75f,                 glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
+    m_engine.renderer()->drawRect  (m_currentPositions[2],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
+    m_engine.renderer()->drawSphere(m_currentPositions[3],  0.75f,                 glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
+    m_engine.renderer()->drawRect  (m_currentPositions[4],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
+    m_engine.renderer()->drawRect  (m_currentPositions[5],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
+    m_engine.renderer()->drawCube  (m_currentPositions[6],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
+    m_engine.renderer()->drawCube  (m_currentPositions[7],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
+    m_engine.renderer()->drawCircle(m_currentPositions[8],  0.75f,                 glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
+    m_engine.renderer()->drawRect  (m_currentPositions[9],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
+    m_engine.renderer()->drawRect  (m_currentPositions[10], glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
 
     //GENERAL IDEAS FOR DIFFERENT PHYSICS SIMULATIONS
     //2d Simulation of blackholes
@@ -80,7 +82,7 @@ void Scene_Menu::sRender()
     m_engine.renderer()->updateMatrix(m_camera->getProjectionMatrix(), m_camera->getViewMatrix());
 
     //draw the hud sort of an ordeal
-    m_engine.renderer()->drawTriangle(glm::vec3(720.0f, 75.0f, 0.0f),  glm::vec2(80.0f, 80.0f), glm::vec3(0.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(-90.0f));
+    m_engine.renderer()->drawTriangle(glm::vec3(720.0f, 75.0f, 0.0f),  glm::vec2(80.0f, 80.0f), glm::vec3(0.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(-90.0f), m_engine.assets()->getTexture("VenusDirt"));
     m_engine.renderer()->drawTriangle(glm::vec3(80.0f,  75.0f, 0.0f),  glm::vec2(80.0f, 80.0f), glm::vec3(0.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(90.0f));
     m_engine.renderer()->drawRect    (glm::vec3(400.0f, 525.0f, 0.0f), glm::vec2(700.0f,100.0f), glm::vec3(0.0f, 1.0f, 1.0f));
 
@@ -131,6 +133,12 @@ void Scene_Menu::sUserInput(const Action& action)
         if (action.name() == "PRINT_POSITION")
         {
             m_camera->printPosition();
+        }
+
+        if (action.name() == "MOUSE_LEFT_CLICKED")
+        {
+            std::cout << "CLICKED MOUSE AT X: " <<  action.pos().x << " Y: " << action.pos().y << "\n";
+            checkButtonCollision(action.pos());
         }
 
     }
@@ -210,5 +218,23 @@ void Scene_Menu::calculateTargetPosition(const std::string& direction)
         m_startPositions = m_currentPositions;
     }
 
+}
+
+//handles the button inputs
+void Scene_Menu::checkButtonCollision(const glm::vec2& pos)
+{
+
+    //the right hand side button
+    if (pos.x < 760 && pos.x > 680 && pos.y > 35 && pos.y < 115 && !m_isRotating)
+    {
+        calculateTargetPosition("ROTATE_COUNTER_CLOCKWISE");
+        m_isRotating = true;
+    }
+    //handle rotation in the other direction
+    if (pos.x < 120 && pos.x > 40 && pos.y > 35 && pos.y < 115 && !m_isRotating)
+    {
+        calculateTargetPosition("ROTATE_CLOCKWISE");
+        m_isRotating = true;
+    }
 }
 

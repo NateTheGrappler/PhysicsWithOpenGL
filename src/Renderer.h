@@ -7,9 +7,13 @@
 #include "shader.h"
 #include "texture.h"
 #include "Camera.h"
+#include <memory>
+
 
 #include <vector>
 #include <glm\detail\type_vec.hpp>
+
+
 
 class Renderer
 {
@@ -25,6 +29,8 @@ private:
 
 	//shader program
 	Shader m_normalShader;
+
+
 
 	//matricies
 	glm::mat4 m_projection;
@@ -47,18 +53,18 @@ public:
 	void initLine();
 
 	//draw call functions that take the data and output it to the screen for 2d items
-	void drawCircle(glm::vec3 position, float radius,   glm::vec3 color, glm::vec3 roation = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, Texture* texture = nullptr);
-	void drawRect(  glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 roation = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, Texture* texture = nullptr);
-	void drawLine(  glm::vec2 start,    glm::vec2(),    glm::vec3 color, Texture* texture = nullptr);
-	void drawTriangle(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 roation = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, Texture* texture = nullptr);
+	void drawCircle(glm::vec3 position, float radius,   glm::vec3 color, glm::vec3 roation = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, std::shared_ptr<Texture> texture = nullptr);
+	void drawRect(  glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 roation = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, std::shared_ptr<Texture> texture = nullptr);
+	void drawLine(  glm::vec2 start,    glm::vec2(),    glm::vec3 color, std::shared_ptr<Texture> texture = nullptr);
+	void drawTriangle(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 roation = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, std::shared_ptr<Texture> texture = nullptr);
 
 	//-------------------------------------FUNCTIONS DEALING WITH 3D--------------------------------------------
 	void initSphere(int sectors = 36, int stacks = 18);
 	void initCube();
 	//void initLine(); maybe have like a plane call to demonstrate the distorition of spacetime?
 	
-	void drawSphere(glm::vec3 position, float radius, glm::vec3 color, glm::vec3 rotate = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, Texture* texture = nullptr);
-	void drawCube(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 roation = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, Texture* texture = nullptr);
+	void drawSphere(glm::vec3 position, float radius, glm::vec3 color, glm::vec3 rotate = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, std::shared_ptr<Texture> texture = nullptr);
+	void drawCube(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 roation = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, std::shared_ptr<Texture> texture = nullptr);
 
 
 

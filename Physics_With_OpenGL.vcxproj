@@ -140,6 +140,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Action.hpp" />
+    <ClInclude Include="src\AssetManager.hpp" />
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\Engine.h" />
     <ClInclude Include="src\Renderer.h" />
@@ -151,6 +152,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="src\res\shader\basic.shader" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="src\res\texture\brick.jpg" />
+    <Image Include="src\res\texture\squidimus.png" />
+    <Image Include="src\res\texture\VenusDirt.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

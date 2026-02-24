@@ -46,8 +46,9 @@ void Engine::init()
 	}
 	glViewport(0, 0, m_WIDTH, m_HEIGHT);
 
-	//creater renderer
+	//creater renderer and assets manager
 	m_renderer = std::make_shared<Renderer>();
+	m_assets   = std::make_shared<AssetManager>();
 
 	//change the scene pointer to be the new menu scene
 	changeScene("MENU", std::make_shared<Scene_Menu>(*this), false);
@@ -134,6 +135,21 @@ void Engine::sUserInput(GLFWwindow* window)
 
 		m_prevKeyStates[key] = currentState;
 	}
+
+	//mouse button click kind of stuff
+	int mouseState = glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_LEFT);
+	int prevMouseState = m_prevKeyStates.count(GLFW_MOUSE_BUTTON_LEFT) ? m_prevKeyStates[GLFW_MOUSE_BUTTON_LEFT] : GLFW_RELEASE;
+
+	if (mouseState == GLFW_PRESS && prevMouseState == GLFW_RELEASE)
+	{
+		double mouseX, mouseY;
+		glfwGetCursorPos(m_window, &mouseX, &mouseY);
+		mouseY = 600 - mouseY;
+
+		Action action("MOUSE_LEFT_CLICKED", "PRESSED", glm::vec2(mouseX, mouseY));
+		currentScene()->sUserInput(action);
+	}
+	m_prevKeyStates[GLFW_MOUSE_BUTTON_LEFT] = mouseState;
 }
 
 GLFWwindow* Engine::getWindow()

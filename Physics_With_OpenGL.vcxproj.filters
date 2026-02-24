@@ -68,8 +68,22 @@
     <ClInclude Include="src\Action.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\AssetManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\res\shader\basic.shader" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="src\res\texture\VenusDirt.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="src\res\texture\brick.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="src\res\texture\squidimus.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
