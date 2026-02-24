@@ -38,6 +38,7 @@ out vec4 FragColor;
 uniform sampler2D tex;
 uniform int useTexture;
 uniform vec3 color;
+uniform vec2 uvScale;
 
 //uniforms that have to do with the lighting
 uniform vec3  lightPos;
@@ -51,7 +52,7 @@ uniform float specularStrength;
 
 void main()
 {
-	vec3 baseColor = useTexture == 1 ? texture(tex, TexCoord).rgb : color;
+	vec3 baseColor = useTexture == 1 ? texture(tex, TexCoord * uvScale).rgb : color;
 
 	//ambient base light level
 	vec3 ambient = ambientStrength * lightColor;

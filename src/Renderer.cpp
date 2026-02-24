@@ -102,13 +102,13 @@ void Renderer::initCircle(int segments)
 void Renderer::initRectangle()
 {
 	//set verticies
-	float vertieces[] = 
+	float vertieces[] =
 	{
-	  //position coordinates       //normals          //texture coordinates
-		 0.5f,  0.5f, 0.0f,     0.0f, 0.0f, 1.0f,         0.0f, 0.0f,
-		 0.5f, -0.5f, 0.0f,     0.0f, 0.0f, 1.0f,         1.0f, 0.0f,
-		-0.5f, -0.5f, 0.0f,     0.0f, 0.0f, 1.0f,         1.0f, 1.0f,
-		-0.5f,  0.5f, 0.0f,     0.0f, 0.0f, 1.0f,         0.0f, 1.0f
+		//position                 //normals            //texture coordinates
+		   0.5f,  0.5f, 0.0f,    0.0f, 0.0f, 1.0f,    1.0f, 1.0f,  // top right
+		   0.5f, -0.5f, 0.0f,    0.0f, 0.0f, 1.0f,    1.0f, 0.0f,  // bottom right
+		  -0.5f, -0.5f, 0.0f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f,  // bottom left
+		  -0.5f,  0.5f, 0.0f,    0.0f, 0.0f, 1.0f,    0.0f, 1.0f   // top left
 	};
 
 	unsigned int indicies[] =
@@ -151,7 +151,7 @@ void Renderer::initTriangle()
 	   //position coordinates       //normals          //texture coordinates
 		-0.5f, -0.5f, 0.0f,      0.0f, 0.0f, 1.0f,         0.0f, 0.0f,
 		 0.5f, -0.5f, 0.0f,      0.0f, 0.0f, 1.0f,         1.0f, 0.0f,
-		 0.0f,  0.5f, 0.0f,      0.0f, 0.0f, 1.0f,         1.0f, 1.0f,
+		 0.0f,  0.5f, 0.0f,      0.0f, 0.0f, 1.0f,         0.5f, 1.0f,
 	};
 
 	unsigned int indicies[] =
@@ -226,10 +226,11 @@ void Renderer::drawCircle(glm::vec3 position, float radius, glm::vec3 color, glm
 	glBindVertexArray(0);
 }
 
-void Renderer::drawRect(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 rotate, float angle, std::shared_ptr<Texture> texture)
+void Renderer::drawRect(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 rotate, float angle, std::shared_ptr<Texture> texture, glm::vec2 textureScale)
 {
 	//use the shader
 	m_normalShader.use();
+	m_normalShader.setVec2("uvScale", textureScale);
 
 	//check to see if a texture was passed, and if so tell the shader to implement it
 	if (texture)

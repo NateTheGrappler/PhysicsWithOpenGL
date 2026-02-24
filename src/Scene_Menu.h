@@ -11,6 +11,7 @@ private:
     std::vector<glm::vec3>   m_currentPositions;
     std::vector<glm::vec3>   m_startPositions;
     unsigned int             m_numberOfObjects = 11;
+    int                      m_currentLookIndex = 3;
     float                    m_radius = 5.0f;
     float                    m_rotationProgress = 0.0f;
     float                    m_rotationSpeed = 3.0f;
@@ -41,6 +42,7 @@ public:
     void calculateTargetPosition(const std::string& direction);
     void checkButtonCollision(const glm::vec2& pos);
 
+    bool detectHover(double xpos, double ypos);
 
     //stuff for the stars
     void initStars();

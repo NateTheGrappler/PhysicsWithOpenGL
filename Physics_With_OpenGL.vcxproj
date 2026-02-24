@@ -156,7 +156,9 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="src\res\texture\brick.jpg" />
+    <Image Include="src\res\texture\RightArrow.png" />
     <Image Include="src\res\texture\squidimus.png" />
+    <Image Include="src\res\texture\topbanner.png" />
     <Image Include="src\res\texture\VenusDirt.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
