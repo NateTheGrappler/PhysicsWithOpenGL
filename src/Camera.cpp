@@ -49,6 +49,11 @@ void staticCamera::setPosition(const glm::vec3& position)
 	m_view = glm::lookAt(m_position, m_target, m_up);
 }
 
+glm::vec3 staticCamera::getPosition() const
+{
+	return m_position;
+}
+
 void staticCamera::printPosition()
 {
 	std::cout << "X: " << m_position.x << " Y: " << m_position.y << " Z: " << m_position.z << std::endl;
@@ -181,4 +186,9 @@ void flyCamera::disableMouse(GLFWwindow* window)
 void flyCamera::printPosition()
 {
 	std::cout << "X: " << m_cameraPos.x << " Y: " << m_cameraPos.y << " Z: " << m_cameraPos.z << std::endl;
+}
+
+glm::vec3 flyCamera::getPosition() const
+{
+	return m_cameraPos;
 }

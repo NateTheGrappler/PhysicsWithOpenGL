@@ -1,3 +1,17 @@
+//GENERAL IDEAS FOR DIFFERENT PHYSICS SIMULATIONS
+//2d Simulation of blackholes
+//3d Simulation of blackholes
+//2d Simulation of gravity/solar system
+//3d Simulation of gravity/solar system
+//2d simulation of some sort of a cloth/rope physics
+//2d simulation of sand/grains, maybe make it 3d or something
+//3d simulation of balls inside of a box (like a cube with a ball in it that you can shake)
+//2d simulation of a pendulum or something of the sort
+//2d simulation of a spring sort of an ordeal
+//maybe do some fun shit with waves
+//try out some fluid simulation maybe
+
+
 #include "Scene_Menu.h"
 
 Scene_Menu::Scene_Menu(Engine& gameEngine)
@@ -8,13 +22,9 @@ Scene_Menu::Scene_Menu(Engine& gameEngine)
 
 void Scene_Menu::init()
 {
-    //preset the renderer to set the scene view
-    m_engine.renderer()->setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
-
-
     //set the initial rotation positions and also apply a rotation of 0 to initialize all vectors
+    m_engine.renderer()->setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
     calculateBasePositions();
-
 
     //init the camera and then allow user to use mouse bc the camera is static
     m_camera = std::make_unique<staticCamera>(glm::vec3(m_currentPositions[3].x - 0.5, m_currentPositions[3].y + 1.5, m_currentPositions[3].z + 4.5),
@@ -24,12 +34,19 @@ void Scene_Menu::init()
     //load in needed assets
     m_engine.assets()->loadTexture("VenusDirt", "src/res/texture/VenusDirt.png");
     
-    //TODO: register in function input
     registerAction(GLFW_KEY_LEFT,  "ROTATE_CLOCKWISE");
     registerAction(GLFW_KEY_RIGHT, "ROTATE_COUNTER_CLOCKWISE");
     registerAction(GLFW_KEY_P,     "CHANGE_PERSPECTIVE");
     registerAction(GLFW_KEY_ENTER, "PRINT_POSITION");
     registerAction(GLFW_KEY_L,     "CHANGE_STATIC");
+
+
+    //set up a pointlight struct for fragment shader
+    m_pointLight.position = glm::vec3(0.0, 5.0f, 0.0f);
+    m_pointLight.color    = glm::vec3(1.0, 1.0f, 1.0f);
+    m_pointLight.ambient  = 0.1f;
+    m_pointLight.diffuse  = 0.8f;
+    m_pointLight.specular = 0.5f;
 
 }
 
@@ -49,39 +66,30 @@ void Scene_Menu::sRender()
 
     //draw out the specific shape of each of the things you want to make
     float rotateAngle = glfwGetTime();
-
     m_camera->setPerspective();
-    m_engine.renderer()->updateMatrix(m_camera->getProjectionMatrix(), m_camera->getViewMatrix());
-    m_engine.renderer()->drawCircle(m_currentPositions[0],  0.75f,                 glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
-    m_engine.renderer()->drawSphere(m_currentPositions[1],  0.75f,                 glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
-    m_engine.renderer()->drawRect  (m_currentPositions[2],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
+    m_engine.renderer()->updateMatrix(m_camera->getProjectionMatrix(), m_camera->getViewMatrix(), m_camera->getPosition());
+    
+    m_engine.renderer()->setLight(m_pointLight);
+    m_engine.renderer()->drawCube  (m_currentPositions[7],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
+    m_engine.renderer()->drawCube  (m_currentPositions[6],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
     m_engine.renderer()->drawSphere(m_currentPositions[3],  0.75f,                 glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
+    m_engine.renderer()->drawSphere(m_currentPositions[1],  0.75f,                 glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
+    
+    m_engine.renderer()->disableLight();
+    m_engine.renderer()->drawCircle(m_currentPositions[0],  0.75f,                 glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
+    m_engine.renderer()->drawRect  (m_currentPositions[2],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
     m_engine.renderer()->drawRect  (m_currentPositions[4],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
     m_engine.renderer()->drawRect  (m_currentPositions[5],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
-    m_engine.renderer()->drawCube  (m_currentPositions[6],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
-    m_engine.renderer()->drawCube  (m_currentPositions[7],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
     m_engine.renderer()->drawCircle(m_currentPositions[8],  0.75f,                 glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
     m_engine.renderer()->drawRect  (m_currentPositions[9],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
     m_engine.renderer()->drawRect  (m_currentPositions[10], glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
 
-    //GENERAL IDEAS FOR DIFFERENT PHYSICS SIMULATIONS
-    //2d Simulation of blackholes
-    //3d Simulation of blackholes
-    //2d Simulation of gravity/solar system
-    //3d Simulation of gravity/solar system
-    //2d simulation of some sort of a cloth/rope physics
-    //2d simulation of sand/grains, maybe make it 3d or something
-    //3d simulation of balls inside of a box (like a cube with a ball in it that you can shake)
-    //2d simulation of a pendulum or something of the sort
-    //2d simulation of a spring sort of an ordeal
-    //maybe do some fun shit with waves
-    //try out some fluid simulation maybe
 
 
+    //2d Stuff / doing the actual hud for the user
     m_camera->setOrthographic(0.0f, 800.0f, 0.0f, 600.0f, -1.0f, 1.0f);
-    m_engine.renderer()->updateMatrix(m_camera->getProjectionMatrix(), m_camera->getViewMatrix());
-
-    //draw the hud sort of an ordeal
+    m_engine.renderer()->updateMatrix(m_camera->getProjectionMatrix(), m_camera->getViewMatrix(), m_camera->getPosition());
+    m_engine.renderer()->disableLight();
     m_engine.renderer()->drawTriangle(glm::vec3(720.0f, 75.0f, 0.0f),  glm::vec2(80.0f, 80.0f), glm::vec3(0.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(-90.0f), m_engine.assets()->getTexture("VenusDirt"));
     m_engine.renderer()->drawTriangle(glm::vec3(80.0f,  75.0f, 0.0f),  glm::vec2(80.0f, 80.0f), glm::vec3(0.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(90.0f));
     m_engine.renderer()->drawRect    (glm::vec3(400.0f, 525.0f, 0.0f), glm::vec2(700.0f,100.0f), glm::vec3(0.0f, 1.0f, 1.0f));

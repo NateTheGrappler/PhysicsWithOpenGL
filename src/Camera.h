@@ -39,6 +39,7 @@ public:
 	virtual void enableMouse(GLFWwindow* window) = 0;
 	virtual void disableMouse(GLFWwindow* window) = 0;
 	virtual void printPosition() = 0;
+	virtual glm::vec3 getPosition() const = 0;
 	virtual glm::mat4 getViewMatrix() = 0;
 	virtual glm::mat4 getProjectionMatrix() = 0;
 	virtual ~Camera() = default;
@@ -77,6 +78,7 @@ public:
 	void setOrthographic(float left, float right, float bottom, float top, float near, float far) override;
 	void setPerspective() override;
 	void setPosition(const glm::vec3& position) override;
+	glm::vec3 getPosition() const override;
 	void printPosition() override;
 };
 
@@ -121,6 +123,7 @@ public:
 	void enableMouse(GLFWwindow* window)  override;
 	void disableMouse(GLFWwindow* window) override;
 	void printPosition() override;
+	glm::vec3 getPosition() const override;
 
 
 	//TODO: find a way to make zooming in possible

@@ -14,6 +14,15 @@
 #include <glm\detail\type_vec.hpp>
 
 
+struct PointLight //holds the needed information for Phong lighting
+{
+	glm::vec3 position;
+	glm::vec3 color;
+	float ambient;
+	float diffuse;
+	float specular;
+};
+
 
 class Renderer
 {
@@ -66,10 +75,12 @@ public:
 	void drawSphere(glm::vec3 position, float radius, glm::vec3 color, glm::vec3 rotate = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, std::shared_ptr<Texture> texture = nullptr);
 	void drawCube(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 roation = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, std::shared_ptr<Texture> texture = nullptr);
 
-
-
 	//Additional functions
 	void clear();
 	void setBackgroundColor(glm::vec4 color);
-	void updateMatrix(glm::mat4 perspective, glm::mat4 view);
+	void updateMatrix(const glm::mat4& perspective, const glm::mat4& view, const glm::vec3& position);
+
+	//shader stuff / lighting
+	void setLight(PointLight& light);
+	void disableLight();
 };

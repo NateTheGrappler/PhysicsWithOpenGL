@@ -14,7 +14,9 @@ private:
     float                    m_radius = 5.0f;
     float                    m_rotationProgress = 0.0f;
     float                    m_rotationSpeed = 3.0f;
+
     std::unique_ptr<Camera>  m_camera;
+    PointLight               m_pointLight;
 
     bool                     m_isRotating = false;
     bool                     m_cameraIsStatic = true;

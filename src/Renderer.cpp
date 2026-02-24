@@ -542,11 +542,36 @@ void Renderer::setBackgroundColor(glm::vec4 color)
 
 }
 
-void Renderer::updateMatrix(glm::mat4 perspective, glm::mat4 view)
+void Renderer::updateMatrix(const glm::mat4& perspective, const glm::mat4& view, const glm::vec3& position)
 {
 	m_projection = perspective;
 	m_view = view;
+
+	//lighting stuff for shader
+	m_normalShader.use();
+	m_normalShader.setVec3("viewPos", position);
 }
+
+void Renderer::setLight(PointLight& light)
+{
+	//set inner shader uniforms to be used for light calculation
+	m_normalShader.use();
+	m_normalShader.setVec3		  ("lightPos",		   light.position);
+	m_normalShader.setVec3		  ("lightColor",       light.color);
+	m_normalShader.setUniformFloat("ambientStrength",  light.ambient);
+	m_normalShader.setUniformFloat("diffuseStrength",  light.diffuse);
+	m_normalShader.setUniformFloat("specularStrength", light.specular);
+
+}
+
+void Renderer::disableLight()
+{
+	m_normalShader.use();
+	m_normalShader.setUniformFloat("ambientStrength",  1.0f);
+	m_normalShader.setUniformFloat("diffuseStrength",  0.0f);
+	m_normalShader.setUniformFloat("specularStrength", 0.0f);
+}
+
 
 
 void Renderer::clear()
