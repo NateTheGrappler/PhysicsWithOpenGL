@@ -72,10 +72,6 @@ void Scene_Menu::sRender()
     //query glfw for the location of the mouse
     double mouseX, mouseY;
     glfwGetCursorPos(m_engine.getWindow(), &mouseX, &mouseY);
-    if (detectHover(mouseX, mouseY))
-    {
-
-    }
 
     //draw the stars
     m_camera->setPerspective();
@@ -83,25 +79,14 @@ void Scene_Menu::sRender()
     m_engine.renderer()->drawStars(m_starVAO, m_starCount, m_camera->getPosition());
 
     
-    //draw the 3d and 3d things in the circle
-    float rotateAngle = glfwGetTime();
-    
-    m_engine.renderer()->setLight(m_pointLight);
-    m_engine.renderer()->drawCube  (m_currentPositions[7],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
-    m_engine.renderer()->drawCube  (m_currentPositions[6],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
-    m_engine.renderer()->drawSphere(m_currentPositions[3],  0.75f,                 glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
-    m_engine.renderer()->drawSphere(m_currentPositions[1],  0.75f,                 glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
-    m_engine.renderer()->disableLight();
-    m_engine.renderer()->drawCircle(m_currentPositions[0],  0.75f,                 glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
-    m_engine.renderer()->drawRect  (m_currentPositions[2],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
-    m_engine.renderer()->drawRect  (m_currentPositions[4],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
-    m_engine.renderer()->drawRect  (m_currentPositions[5],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
-    m_engine.renderer()->drawCircle(m_currentPositions[8],  0.75f,                 glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
-    m_engine.renderer()->drawRect  (m_currentPositions[9],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
-    m_engine.renderer()->drawRect  (m_currentPositions[10], glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
 
+    
+    //draw every option in the circle
     for (int i = 0; i < m_currentPositions.size(); i++)
     {
+        
+        float rotateAngle = glfwGetTime();
+
         float scale = (i == m_currentLookIndex) ? 1.5f : 0.75f;
         if(i == m_currentLookIndex) { }
 
@@ -109,16 +94,22 @@ void Scene_Menu::sRender()
         if (i == 0 || i == 8)
         {
             m_engine.renderer()->drawCircle(m_currentPositions[i], 0.75f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
+            if (i == m_currentLookIndex && detectHover(mouseX, mouseY))
+            {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+                m_engine.renderer()->drawSphere(m_currentPositions[i], 1.05f, glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle * 1.5);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            }
         }
         //the spheres
         if (i == 1 || i == 3)
         {
             m_engine.renderer()->setLight(m_pointLight);
             m_engine.renderer()->drawSphere(m_currentPositions[i], 0.75f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
-            if (i == m_currentLookIndex) 
+            if (i == m_currentLookIndex && detectHover(mouseX, mouseY))
             { 
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                m_engine.renderer()->drawSphere(m_currentPositions[i], 1.05f, glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle * 1.5); 
+                m_engine.renderer()->drawSphere(m_currentPositions[i], 1.05f, glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle * 1.5); 
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             }
             m_engine.renderer()->disableLight();
@@ -127,13 +118,25 @@ void Scene_Menu::sRender()
         if (i == 7 || i == 6)
         {
             m_engine.renderer()->setLight(m_pointLight);
-            m_engine.renderer()->drawCube(m_currentPositions[6], glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
+            m_engine.renderer()->drawCube(m_currentPositions[i], glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
             m_engine.renderer()->disableLight();
+            if (i == m_currentLookIndex && detectHover(mouseX, mouseY))
+            {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                m_engine.renderer()->drawCube(m_currentPositions[i], glm::vec2(1.5f, 1.5f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle * 1.5);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            }
         }
         //the rectangles
         if (i == 2 || i == 4 || i == 5 || i == 9 || i == 10)
         {
             m_engine.renderer()->drawRect(m_currentPositions[i], glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
+            if (i == m_currentLookIndex && detectHover(mouseX, mouseY))
+            {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                m_engine.renderer()->drawRect(m_currentPositions[i], glm::vec2(1.5f, 1.5f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            }
         }
     }
 
@@ -143,8 +146,6 @@ void Scene_Menu::sRender()
     m_engine.renderer()->disableLight();
     m_engine.renderer()->drawTriangle(glm::vec3(720.0f, 75.0f, 0.0f),  glm::vec2(80.0f, 80.0f), glm::vec3(0.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(-90.0f), m_engine.assets()->getTexture("RightArrow"));
     m_engine.renderer()->drawTriangle(glm::vec3(80.0f,  75.0f, 0.0f),  glm::vec2(80.0f, 80.0f), glm::vec3(0.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(90.0f), m_engine.assets()->getTexture("RightArrow"));
-    
-   
     m_engine.renderer()->drawRect    (glm::vec3(400.0f, 525.0f, 0.0f), glm::vec2(700.0f, 100.0f), glm::vec3(0.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0, m_engine.assets()->getTexture("topBanner"));
 
 }
@@ -294,21 +295,27 @@ void Scene_Menu::checkButtonCollision(const glm::vec2& pos)
     //the right hand side button
     if (pos.x < 760 && pos.x > 680 && pos.y > 35 && pos.y < 115 && !m_isRotating)
     {
-        calculateTargetPosition("ROTATE_COUNTER_CLOCKWISE");
+        calculateTargetPosition("ROTATE_CLOCKWISE");
         m_isRotating = true;
     }
     //handle rotation in the other direction
     if (pos.x < 120 && pos.x > 40 && pos.y > 35 && pos.y < 115 && !m_isRotating)
     {
-        calculateTargetPosition("ROTATE_CLOCKWISE");
+        calculateTargetPosition("ROTATE_COUNTER_CLOCKWISE");
         m_isRotating = true;
     }
 }
-
 bool Scene_Menu::detectHover(double xpos, double ypos)
 {
+
+    if (xpos < 500 && xpos > 300 && ypos < 400 && ypos > 200)
+    {
+        return true;
+    }
     return false;
 }
+
+
 
 void Scene_Menu::initStars()
 {
