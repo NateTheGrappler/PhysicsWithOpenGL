@@ -38,7 +38,7 @@ private:
 
 	//shader program
 	Shader m_normalShader;
-
+	Shader m_starShader;
 
 
 	//matricies
@@ -74,6 +74,7 @@ public:
 	
 	void drawSphere(glm::vec3 position, float radius, glm::vec3 color, glm::vec3 rotate = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, std::shared_ptr<Texture> texture = nullptr);
 	void drawCube(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 roation = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, std::shared_ptr<Texture> texture = nullptr);
+	void drawStars(unsigned int VAO, unsigned starCount, const glm::vec3& cameraPos);
 
 	//Additional functions
 	void clear();
@@ -83,4 +84,5 @@ public:
 	//shader stuff / lighting
 	void setLight(PointLight& light);
 	void disableLight();
+
 };

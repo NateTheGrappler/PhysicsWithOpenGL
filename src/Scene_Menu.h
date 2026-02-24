@@ -21,6 +21,10 @@ private:
     bool                     m_isRotating = false;
     bool                     m_cameraIsStatic = true;
 
+    unsigned int m_starVAO, m_starVBO;
+    unsigned int m_starCount = 3000;
+
+
 
 public:
     Scene_Menu(Engine& gameEngine);
@@ -36,4 +40,8 @@ public:
     void applyRotation();
     void calculateTargetPosition(const std::string& direction);
     void checkButtonCollision(const glm::vec2& pos);
+
+
+    //stuff for the stars
+    void initStars();
 };

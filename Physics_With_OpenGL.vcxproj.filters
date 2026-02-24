@@ -74,6 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="src\res\shader\basic.shader" />
+    <None Include="src\res\shader\starShader.shader" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="src\res\texture\VenusDirt.png">

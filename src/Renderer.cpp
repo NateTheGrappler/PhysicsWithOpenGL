@@ -1,7 +1,8 @@
 #include "Renderer.h"
 
 Renderer::Renderer()
-	:m_normalShader("src/res/shader/basic.shader")
+	:m_normalShader("src/res/shader/basic.shader"),
+	m_starShader("src/res/shader/starShader.shader")
 {
 	init();
 }
@@ -17,9 +18,12 @@ void Renderer::init()
 	initCube();
 	initSphere();
 
+	//for rendering stars in menu
+	glEnable(GL_PROGRAM_POINT_SIZE);
+
 	//init buffer dept
 	glEnable(GL_DEPTH_TEST);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 
 
@@ -530,6 +534,23 @@ void Renderer::drawCube(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm
 	glBindVertexArray(m_cubeVAO);
 	glDrawElements(GL_TRIANGLES, m_cubeIndexCount, GL_UNSIGNED_INT, nullptr);
 	glBindVertexArray(0);
+}
+
+void Renderer::drawStars(unsigned int VAO, unsigned starCount, const glm::vec3& cameraPos)
+{
+	m_starShader.use();
+
+	glm::mat4 model = glm::mat4(1.0f);
+
+	m_normalShader.setMat4("model", model);
+	m_normalShader.setMat4("view", m_view);
+	m_normalShader.setMat4("projection", m_projection);
+
+	glDepthMask(GL_FALSE);
+	glBindVertexArray(VAO);
+	glDrawArrays(GL_POINTS, 0, starCount);
+	glBindVertexArray(0);
+	glDepthMask(GL_TRUE);
 }
 
 

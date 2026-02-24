@@ -13,6 +13,7 @@
 
 
 #include "Scene_Menu.h"
+#include <random>
 
 Scene_Menu::Scene_Menu(Engine& gameEngine)
     : Scene(gameEngine)
@@ -48,6 +49,8 @@ void Scene_Menu::init()
     m_pointLight.diffuse  = 0.8f;
     m_pointLight.specular = 0.5f;
 
+    initStars();
+
 }
 
 void Scene_Menu::update()
@@ -66,9 +69,13 @@ void Scene_Menu::sRender()
 
     //draw out the specific shape of each of the things you want to make
     float rotateAngle = glfwGetTime();
+
     m_camera->setPerspective();
     m_engine.renderer()->updateMatrix(m_camera->getProjectionMatrix(), m_camera->getViewMatrix(), m_camera->getPosition());
+    m_engine.renderer()->drawStars(m_starVAO, m_starCount, m_camera->getPosition());
+
     
+    //draw the things in the circle
     m_engine.renderer()->setLight(m_pointLight);
     m_engine.renderer()->drawCube  (m_currentPositions[7],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
     m_engine.renderer()->drawCube  (m_currentPositions[6],  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
@@ -244,5 +251,53 @@ void Scene_Menu::checkButtonCollision(const glm::vec2& pos)
         calculateTargetPosition("ROTATE_CLOCKWISE");
         m_isRotating = true;
     }
+}
+
+void Scene_Menu::initStars()
+{
+    //init random vals for the stars
+    std::vector<float> stars;
+    std::mt19937 rng(42);
+    std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
+    std::uniform_real_distribution<float> distPoint(0.5f, 5.0f);
+
+    //generate the stars based on this random distance
+    for (int i = 0; i < m_starCount; i++)
+    {
+        glm::vec3 point;
+        float pointSize;
+        do
+        {
+            point = glm::vec3(dist(rng), dist(rng), dist(rng));
+            pointSize = distPoint(rng);
+
+        } while (glm::length(point) > 1.0f);
+
+
+        //set the radius for the sphere
+        point = glm::normalize(point) * 90.0f;
+
+        stars.push_back(point.x);
+        stars.push_back(point.y);
+        stars.push_back(point.z);
+        stars.push_back(pointSize);
+
+    }
+
+
+    //init all of the data for opengl
+    glGenVertexArrays(1, &m_starVAO);
+    glBindVertexArray(m_starVAO);
+
+    glGenBuffers(1, &m_starVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_starVBO);
+    glBufferData(GL_ARRAY_BUFFER, stars.size() * sizeof(float), stars.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
 }
 
