@@ -9,6 +9,8 @@
 #include "Camera.h"
 #include <memory>
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 #include <vector>
 #include <glm\detail\type_vec.hpp>

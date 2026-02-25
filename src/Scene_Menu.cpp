@@ -84,11 +84,7 @@ void Scene_Menu::sRender()
     //draw every option in the circle
     for (int i = 0; i < m_currentPositions.size(); i++)
     {
-        
         float rotateAngle = glfwGetTime();
-
-        float scale = (i == m_currentLookIndex) ? 1.5f : 0.75f;
-        if(i == m_currentLookIndex) { }
 
         //draw the circles
         if (i == 0 || i == 8)
