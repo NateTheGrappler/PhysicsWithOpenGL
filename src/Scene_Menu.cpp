@@ -328,7 +328,6 @@ void Scene_Menu::renderSelection(int currentIndex, std::string shape, float rota
 
 
 }
-
 void Scene_Menu::drawSimulationName()
 {
     double mouseX, mouseY;
