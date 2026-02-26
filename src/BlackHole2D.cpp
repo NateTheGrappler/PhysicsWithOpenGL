@@ -29,10 +29,26 @@ void BlackHole2D_Scene::init()
 	};
 	m_blackHoles.push_back(bh);
 	std::cout << "Mass: " << bh.mass << " Radius: " << bh.r_s << " Render Radius: " << bh.getRenderRadius() << std::endl;
+
+	//set up a light ray
+	lightRay lr =
+	{
+		glm::vec3(0.0f, 300.0f, 0),
+		glm::vec3(1.0f, 1.0f, 1.0f),
+		glm::vec2(1.0f, 0.0f)
+	};
+	m_lightRays.push_back(lr);
+
 }
 
 void BlackHole2D_Scene::update()
 {
+	//update the position of the light ray
+	for (int i = 0; i < m_lightRays.size(); i++)
+	{
+		m_lightRays[i].step(m_renderScale, m_engine.getDeltaTime());
+		std::cout << "X: " << m_lightRays[i].position.x << " Y: " << m_lightRays[i].position.y << std::endl;
+	}
 	sRender();
 }
 
@@ -49,6 +65,11 @@ void BlackHole2D_Scene::sRender()
 	for (const blackHole2D& blackHole : m_blackHoles)
 	{
 		m_engine.renderer()->drawCircle(blackHole.position, blackHole.getRenderRadius(), blackHole.color);
+	}
+
+	for (int i = 0; i < m_lightRays.size(); i++)
+	{
+		m_engine.renderer()->drawTrail(m_lightRays[i].trail, m_lightRays[i].color);
 	}
 
 	glEnable(GL_DEPTH_TEST);

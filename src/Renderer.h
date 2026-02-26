@@ -44,6 +44,7 @@ private:
 	unsigned int m_rectVAO,     m_rectVBO,       m_rectIBO;
 	unsigned int m_triangleVAO, m_triangleVBO,   m_triangleIBO;
 	unsigned int m_lineVAO,     m_lineVBO;
+	unsigned int m_trailVAO,     m_trailVBO;
 
 	//3d items
 	unsigned int m_sphereVAO, m_sphereVBO, m_sphereIBO, m_sphereIndexCount;
@@ -57,6 +58,7 @@ private:
 	Shader m_normalShader;
 	Shader m_starShader;
 	Shader m_textShader;
+	Shader m_trailShader;
 
 	//matricies
 	glm::mat4 m_projection;
@@ -103,5 +105,8 @@ public:
 	//shader stuff / lighting
 	void setLight(PointLight& light);
 	void disableLight();
+
+	void initTrail();
+	void drawTrail(std::vector<glm::vec2>& positions, glm::vec3 color);
 
 };

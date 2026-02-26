@@ -3,7 +3,8 @@
 Renderer::Renderer()
 	:m_normalShader("src/res/shader/basic.shader"),
 	m_starShader("src/res/shader/starShader.shader"),
-	m_textShader("src/res/shader/text.shader")
+	m_textShader("src/res/shader/text.shader"),
+	m_trailShader("src/res/shader/trail.shader")
 {
 	init();
 }
@@ -16,7 +17,7 @@ void Renderer::init()
 	initTriangle();
 	initLine();
 	initText("src/res/fonts/arialnarrow.ttf");
-
+	initTrail();
 	initCube();
 	initSphere();
 
@@ -699,6 +700,61 @@ void Renderer::disableLight()
 	m_normalShader.setUniformFloat("ambientStrength",  1.0f);
 	m_normalShader.setUniformFloat("diffuseStrength",  0.0f);
 	m_normalShader.setUniformFloat("specularStrength", 0.0f);
+}
+
+void Renderer::initTrail()
+{
+	glGenVertexArrays(1, &m_trailVAO);
+	glBindVertexArray(m_trailVAO);
+
+	glGenBuffers(1, &m_trailVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_trailVBO);
+	glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_DYNAMIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), 0);
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(3*sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(6*sizeof(float)));
+	glEnableVertexAttribArray(2);
+
+	glBindVertexArray(0);
+}
+void Renderer::drawTrail(std::vector<glm::vec2>& positions, glm::vec3 color)
+{
+	m_trailShader.use();
+	m_trailShader.setMat4("projection", m_projection);
+
+	std::vector<float> vertices;
+
+	if (positions.empty()) { return; }
+
+	for (int i = 0; i < positions.size(); i++)
+	{
+		float alpha = (float)i / positions.size();
+
+		vertices.push_back(positions[i].x);
+		vertices.push_back(positions[i].y);
+		vertices.push_back(0.0f);
+		vertices.push_back(color.r);
+		vertices.push_back(color.g);
+		vertices.push_back(color.b);
+		vertices.push_back(alpha);
+	}
+
+	glBindVertexArray(m_trailVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_trailVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), vertices.data(), GL_DYNAMIC_DRAW);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glDrawArrays(GL_POINTS, 0, positions.size());
+
+	glDisable(GL_BLEND);
+	glBindVertexArray(0);
 }
 
 
