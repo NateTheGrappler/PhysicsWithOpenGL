@@ -45,6 +45,7 @@ public:
     bool detectHover(double xpos, double ypos);
     void renderSelection(int currentIndex, std::string shape, float rotateAngle);
     void drawSimulationName();
+    void changeScene();
 
     //stuff for the stars
     void initStars();

@@ -15,6 +15,7 @@
 #include "Scene_Menu.h"
 #include <string>
 #include <random>
+#include "BlackHole2D.h"
 
 Scene_Menu::Scene_Menu(Engine& gameEngine)
     : Scene(gameEngine)
@@ -41,7 +42,7 @@ void Scene_Menu::init()
     registerAction(GLFW_KEY_LEFT,  "ROTATE_CLOCKWISE");
     registerAction(GLFW_KEY_RIGHT, "ROTATE_COUNTER_CLOCKWISE");
     registerAction(GLFW_KEY_P,     "CHANGE_PERSPECTIVE");
-    registerAction(GLFW_KEY_ENTER, "PRINT_POSITION");
+    registerAction(GLFW_KEY_ENTER, "ENTER_SCENE");
     registerAction(GLFW_KEY_L,     "CHANGE_STATIC");
 
 
@@ -171,15 +172,13 @@ void Scene_Menu::sUserInput(const Action& action)
                 m_cameraIsStatic = true;
             }
         }
-        if (action.name() == "PRINT_POSITION")
-        {
-            m_camera->printPosition();
-        }
+        if (action.name() == "ENTER_SCENE")   { changeScene(); }
 
         if (action.name() == "MOUSE_LEFT_CLICKED")
         {
             std::cout << "CLICKED MOUSE AT X: " <<  action.pos().x << " Y: " << action.pos().y << "\n";
             checkButtonCollision(action.pos());
+            if (detectHover(action.pos().x, action.pos().y)) { changeScene(); }
         }
 
     }
@@ -347,6 +346,21 @@ void Scene_Menu::drawSimulationName()
     if (m_currentLookIndex == 8  && hovered) { m_engine.renderer()->drawText("Springs and Motion"      , glm::vec2(215.0f, 60), 1.0f, glm::vec3(0.9, 0.9, 0.9));}
     if (m_currentLookIndex == 9  && hovered) { m_engine.renderer()->drawText("2D Light And Sound Waves", glm::vec2(160.0f, 60), 1.0f, glm::vec3(0.9, 0.9, 0.9));}
     if (m_currentLookIndex == 10 && hovered) { m_engine.renderer()->drawText("2D Fluid Simulations"    , glm::vec2(220.0f, 60), 1.0f, glm::vec3(0.9, 0.9, 0.9));}
+}
+
+void Scene_Menu::changeScene()
+{
+    if (m_currentLookIndex == 0)  { m_engine.changeScene("2D_BLACK_HOLE", std::make_shared<BlackHole2D_Scene>(m_engine), false); }
+    if (m_currentLookIndex == 1)  { m_engine.changeScene("2D_BLACK_HOLE", std::make_shared<BlackHole2D_Scene>(m_engine), false); }
+    if (m_currentLookIndex == 2)  { m_engine.changeScene("2D_BLACK_HOLE", std::make_shared<BlackHole2D_Scene>(m_engine), false); }
+    if (m_currentLookIndex == 3)  { m_engine.changeScene("2D_BLACK_HOLE", std::make_shared<BlackHole2D_Scene>(m_engine), false); }
+    if (m_currentLookIndex == 4)  { m_engine.changeScene("2D_BLACK_HOLE", std::make_shared<BlackHole2D_Scene>(m_engine), false); }
+    if (m_currentLookIndex == 5)  { m_engine.changeScene("2D_BLACK_HOLE", std::make_shared<BlackHole2D_Scene>(m_engine), false); }
+    if (m_currentLookIndex == 6)  { m_engine.changeScene("2D_BLACK_HOLE", std::make_shared<BlackHole2D_Scene>(m_engine), false); }
+    if (m_currentLookIndex == 7)  { m_engine.changeScene("2D_BLACK_HOLE", std::make_shared<BlackHole2D_Scene>(m_engine), false); }
+    if (m_currentLookIndex == 8)  { m_engine.changeScene("2D_BLACK_HOLE", std::make_shared<BlackHole2D_Scene>(m_engine), false); }
+    if (m_currentLookIndex == 9)  { m_engine.changeScene("2D_BLACK_HOLE", std::make_shared<BlackHole2D_Scene>(m_engine), false); }
+    if (m_currentLookIndex == 10) { m_engine.changeScene("2D_BLACK_HOLE", std::make_shared<BlackHole2D_Scene>(m_engine), false); }
 }
 
 
