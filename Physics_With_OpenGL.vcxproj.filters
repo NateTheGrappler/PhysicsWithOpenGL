@@ -75,7 +75,7 @@
   <ItemGroup>
     <None Include="src\res\shader\basic.shader" />
     <None Include="src\res\shader\starShader.shader" />
-    <None Include="vcpkg.json" />
+    <None Include="src\res\shader\text.shader" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="src\res\texture\VenusDirt.png">
@@ -93,5 +93,8 @@
     <Image Include="src\res\texture\RightArrow.png">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="src\res\fonts\arialnarrow.ttf" />
   </ItemGroup>
 </Project>

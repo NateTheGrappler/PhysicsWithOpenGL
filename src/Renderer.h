@@ -14,6 +14,7 @@
 
 #include <vector>
 #include <glm\detail\type_vec.hpp>
+#include <map>
 
 
 struct PointLight //holds the needed information for Phong lighting
@@ -25,6 +26,15 @@ struct PointLight //holds the needed information for Phong lighting
 	float specular;
 };
 
+//a char struct for rendering text
+struct Character
+{
+	unsigned int textureID;
+	glm::ivec2   size;
+	glm::ivec2   bearing;
+	unsigned int advance;
+};
+
 
 class Renderer
 {
@@ -33,15 +43,20 @@ private:
 	unsigned int m_circleVAO,   m_circleVBO,     m_circleIBO, m_circleIndexCount;
 	unsigned int m_rectVAO,     m_rectVBO,       m_rectIBO;
 	unsigned int m_triangleVAO, m_triangleVBO,   m_triangleIBO;
-	unsigned int m_lineVAO,   m_lineVBO;
+	unsigned int m_lineVAO,     m_lineVBO;
 
+	//3d items
 	unsigned int m_sphereVAO, m_sphereVBO, m_sphereIBO, m_sphereIndexCount;
 	unsigned int m_cubeVAO,   m_cubeVBO,   m_cubeIBO,   m_cubeIndexCount;
+
+	//text
+	std::map<char, Character> m_characters;
+	unsigned int m_textVAO, m_textVBO;
 
 	//shader program
 	Shader m_normalShader;
 	Shader m_starShader;
-
+	Shader m_textShader;
 
 	//matricies
 	glm::mat4 m_projection;
@@ -61,6 +76,7 @@ public:
 	void initCircle(int segments = 64);
 	void initRectangle();
 	void initTriangle();
+	void initText(const std::string& fontpath);
 	void initLine();
 
 	//draw call functions that take the data and output it to the screen for 2d items
@@ -68,6 +84,7 @@ public:
 	void drawRect(  glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 roation = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, std::shared_ptr<Texture> texture = nullptr, glm::vec2 textureScale = glm::vec2(1.0f, 1.0f));
 	void drawLine(  glm::vec2 start,    glm::vec2(),    glm::vec3 color, std::shared_ptr<Texture> texture = nullptr);
 	void drawTriangle(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 roation = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, std::shared_ptr<Texture> texture = nullptr);
+	void drawText(std::string text, glm::vec2 position, float scale, glm::vec3 color);
 
 	//-------------------------------------FUNCTIONS DEALING WITH 3D--------------------------------------------
 	void initSphere(int sectors = 36, int stacks = 18);

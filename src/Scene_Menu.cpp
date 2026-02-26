@@ -13,6 +13,7 @@
 
 
 #include "Scene_Menu.h"
+#include <string>
 #include <random>
 
 Scene_Menu::Scene_Menu(Engine& gameEngine)
@@ -69,10 +70,6 @@ void Scene_Menu::sRender()
     if (m_isRotating)     { applyRotation(); }
     else                  { m_rotationProgress = 0.0f; }
 
-    //query glfw for the location of the mouse
-    double mouseX, mouseY;
-    glfwGetCursorPos(m_engine.getWindow(), &mouseX, &mouseY);
-
     //draw the stars
     m_camera->setPerspective();
     m_engine.renderer()->updateMatrix(m_camera->getProjectionMatrix(), m_camera->getViewMatrix(), m_camera->getPosition());
@@ -90,24 +87,14 @@ void Scene_Menu::sRender()
         if (i == 0 || i == 8)
         {
             m_engine.renderer()->drawCircle(m_currentPositions[i], 0.75f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
-            if (i == m_currentLookIndex && detectHover(mouseX, mouseY))
-            {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-                m_engine.renderer()->drawSphere(m_currentPositions[i], 1.05f, glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle * 1.5);
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            }
+            renderSelection(i, "circle", rotateAngle);
         }
         //the spheres
         if (i == 1 || i == 3)
         {
             m_engine.renderer()->setLight(m_pointLight);
             m_engine.renderer()->drawSphere(m_currentPositions[i], 0.75f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
-            if (i == m_currentLookIndex && detectHover(mouseX, mouseY))
-            { 
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                m_engine.renderer()->drawSphere(m_currentPositions[i], 1.05f, glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle * 1.5); 
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            }
+            renderSelection(i, "sphere", rotateAngle);
             m_engine.renderer()->disableLight();
         }
         //the cubes
@@ -116,35 +103,31 @@ void Scene_Menu::sRender()
             m_engine.renderer()->setLight(m_pointLight);
             m_engine.renderer()->drawCube(m_currentPositions[i], glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
             m_engine.renderer()->disableLight();
-            if (i == m_currentLookIndex && detectHover(mouseX, mouseY))
-            {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                m_engine.renderer()->drawCube(m_currentPositions[i], glm::vec2(1.5f, 1.5f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle * 1.5);
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            }
+            renderSelection(i, "cube", rotateAngle);
+
         }
         //the rectangles
         if (i == 2 || i == 4 || i == 5 || i == 9 || i == 10)
         {
             m_engine.renderer()->drawRect(m_currentPositions[i], glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle, m_engine.assets()->getTexture("VenusDirt"));
-            if (i == m_currentLookIndex && detectHover(mouseX, mouseY))
-            {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                m_engine.renderer()->drawRect(m_currentPositions[i], glm::vec2(1.5f, 1.5f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle);
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            }
+            renderSelection(i, "rect", rotateAngle);
+
         }
     }
 
     //2d Stuff / doing the actual hud for the user
+    glDisable(GL_DEPTH_TEST);
     m_camera->setOrthographic(0.0f, 800.0f, 0.0f, 600.0f, -1.0f, 1.0f);
     m_engine.renderer()->updateMatrix(m_camera->getProjectionMatrix(), m_camera->getViewMatrix(), m_camera->getPosition());
     m_engine.renderer()->disableLight();
     m_engine.renderer()->drawTriangle(glm::vec3(720.0f, 75.0f, 0.0f),  glm::vec2(80.0f, 80.0f), glm::vec3(0.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(-90.0f), m_engine.assets()->getTexture("RightArrow"));
     m_engine.renderer()->drawTriangle(glm::vec3(80.0f,  75.0f, 0.0f),  glm::vec2(80.0f, 80.0f), glm::vec3(0.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(90.0f), m_engine.assets()->getTexture("RightArrow"));
-    m_engine.renderer()->drawRect    (glm::vec3(400.0f, 525.0f, 0.0f), glm::vec2(700.0f, 100.0f), glm::vec3(0.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0, m_engine.assets()->getTexture("topBanner"));
-
+    m_engine.renderer()->drawRect    (glm::vec3(400.0f, 525.0f, 0.0f), glm::vec2(700.0f, 80.0f), glm::vec3(0.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0, m_engine.assets()->getTexture("topBanner"));
+    m_engine.renderer()->drawText("Physics Simulations w/ Opengl", glm::vec2(145.0f, 510), 0.9f, glm::vec3(0.9f, 0.9f, 0.9f));
+    drawSimulationName();
+    glEnable(GL_DEPTH_TEST);
 }
+
 
 void Scene_Menu::sUserInput(const Action& action)
 {
@@ -309,6 +292,62 @@ bool Scene_Menu::detectHover(double xpos, double ypos)
         return true;
     }
     return false;
+}
+
+void Scene_Menu::renderSelection(int currentIndex, std::string shape, float rotateAngle)
+{
+    //query glfw for the location of the mouse
+    double mouseX, mouseY;
+    glfwGetCursorPos(m_engine.getWindow(), &mouseX, &mouseY);
+
+    if (currentIndex == m_currentLookIndex && detectHover(mouseX, mouseY) && shape == "rect")
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        m_engine.renderer()->drawRect(m_currentPositions[currentIndex], glm::vec2(1.5f, 1.5f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+    if (currentIndex == m_currentLookIndex && detectHover(mouseX, mouseY) && shape == "sphere")
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        m_engine.renderer()->drawSphere(m_currentPositions[currentIndex], 1.05f, glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle * 1.5);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+    if (currentIndex == m_currentLookIndex && detectHover(mouseX, mouseY) && shape == "cube")
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        m_engine.renderer()->drawCube(m_currentPositions[currentIndex], glm::vec2(1.5f, 1.5f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle * 1.5);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+    if (currentIndex == m_currentLookIndex && detectHover(mouseX, mouseY) && shape == "circle")
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+        m_engine.renderer()->drawSphere(m_currentPositions[currentIndex], 1.05f, glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), rotateAngle);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+
+
+
+}
+
+void Scene_Menu::drawSimulationName()
+{
+    double mouseX, mouseY;
+    glfwGetCursorPos(m_engine.getWindow(), &mouseX, &mouseY);
+
+    bool hovered = detectHover(mouseX, mouseY);
+
+    //do the draw calls based on what the hovered item is
+    if (m_currentLookIndex == 0  && hovered) { m_engine.renderer()->drawText("2D Black Hole Simulation", glm::vec2(180.0f, 60), 1.0f, glm::vec3(0.9, 0.9, 0.9));}
+    if (m_currentLookIndex == 1  && hovered) { m_engine.renderer()->drawText("3D Black Hole Simulation", glm::vec2(180.0f, 60), 1.0f, glm::vec3(0.9, 0.9, 0.9));}
+    if (m_currentLookIndex == 2  && hovered) { m_engine.renderer()->drawText("2D Solar System Gravity" , glm::vec2(180.0f, 60), 1.0f, glm::vec3(0.9, 0.9, 0.9));}
+    if (m_currentLookIndex == 3  && hovered) { m_engine.renderer()->drawText("3D Solar System Gravity" , glm::vec2(180.0f, 60), 1.0f, glm::vec3(0.9, 0.9, 0.9));}
+    if (m_currentLookIndex == 4  && hovered) { m_engine.renderer()->drawText("Cloth / Rope Simulation" , glm::vec2(190.0f, 60), 1.0f, glm::vec3(0.9, 0.9, 0.9));}
+    if (m_currentLookIndex == 5  && hovered) { m_engine.renderer()->drawText("2D Sand Simulation"      , glm::vec2(215.0f, 60), 1.0f, glm::vec3(0.9, 0.9, 0.9));}
+    if (m_currentLookIndex == 6  && hovered) { m_engine.renderer()->drawText("3D Ball Inside a box"    , glm::vec2(215.0f, 60), 1.0f, glm::vec3(0.9, 0.9, 0.9));}
+    if (m_currentLookIndex == 7  && hovered) { m_engine.renderer()->drawText("Pendulum and Motion"     , glm::vec2(215.0f, 60), 1.0f, glm::vec3(0.9, 0.9, 0.9));}
+    if (m_currentLookIndex == 8  && hovered) { m_engine.renderer()->drawText("Springs and Motion"      , glm::vec2(215.0f, 60), 1.0f, glm::vec3(0.9, 0.9, 0.9));}
+    if (m_currentLookIndex == 9  && hovered) { m_engine.renderer()->drawText("2D Light And Sound Waves", glm::vec2(160.0f, 60), 1.0f, glm::vec3(0.9, 0.9, 0.9));}
+    if (m_currentLookIndex == 10 && hovered) { m_engine.renderer()->drawText("2D Fluid Simulations"    , glm::vec2(220.0f, 60), 1.0f, glm::vec3(0.9, 0.9, 0.9));}
 }
 
 

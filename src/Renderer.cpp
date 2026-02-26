@@ -2,7 +2,8 @@
 
 Renderer::Renderer()
 	:m_normalShader("src/res/shader/basic.shader"),
-	m_starShader("src/res/shader/starShader.shader")
+	m_starShader("src/res/shader/starShader.shader"),
+	m_textShader("src/res/shader/text.shader")
 {
 	init();
 }
@@ -14,6 +15,7 @@ void Renderer::init()
 	initRectangle();
 	initTriangle();
 	initLine();
+	initText("src/res/fonts/arialnarrow.ttf");
 
 	initCube();
 	initSphere();
@@ -98,7 +100,6 @@ void Renderer::initCircle(int segments)
 	glBindVertexArray(0);
    
 }
-
 void Renderer::initRectangle()
 {
 	//set verticies
@@ -142,7 +143,6 @@ void Renderer::initRectangle()
 	glBindVertexArray(0);
 
 }
-
 void Renderer::initTriangle()
 {
 	//set verticies
@@ -183,7 +183,76 @@ void Renderer::initTriangle()
 
 	glBindVertexArray(0);
 }
+void Renderer::initText(const std::string& fontpath)
+{
+	//load in the free type library and set up the font
+	FT_Library ft;
+	if (FT_Init_FreeType(&ft))
+	{
+		std::cout << "failed to load in free type library" << std::endl;
+	}
+	FT_Face face;
+	if (FT_New_Face(ft, fontpath.c_str(), 0, &face))
+	{
+		std::cout << "Failed to load font: " << fontpath << std::endl;
+	}
 
+	FT_Set_Pixel_Sizes(face, 0, 48); //the zero here allows for the width to get calculated from the height
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); //disable byte allignement bc opengl needs 4 bytes per texture or something
+
+
+	//load all 128 chars
+	for (unsigned char c = 0; c < 128; c++) //(get it)
+	{
+		if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+		{
+			std::cout << "failed to load character: " << c << std::endl;
+		}
+
+		//load in all of the needed texture data for open gl
+		unsigned int texture;
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexImage2D(
+			GL_TEXTURE_2D, 0, GL_RED,
+			face->glyph->bitmap.width,
+			face->glyph->bitmap.rows,
+			0, GL_RED, GL_UNSIGNED_BYTE,
+			face->glyph->bitmap.buffer
+		);
+
+		//set tex params
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		//save data to struct and upload to render class
+		Character character =
+		{
+			texture,
+			glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+			glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+			(unsigned int)face->glyph->advance.x
+		};
+
+		m_characters.insert(std::pair<char, Character>(c, character));
+	}
+
+	//free the memory from facetype
+	FT_Done_Face(face);
+	FT_Done_FreeType(ft);
+
+	//load memory in opengl
+	glGenVertexArrays(1, &m_textVAO);
+	glBindVertexArray(m_textVAO);
+	glGenBuffers(1, &m_textVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_textVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, nullptr, GL_DYNAMIC_DRAW); //dynamic is used here because vertices change based on character
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+	glEnableVertexAttribArray(0);
+	glBindVertexArray(0);
+}
 void Renderer::initLine()
 {
 
@@ -225,7 +294,6 @@ void Renderer::drawCircle(glm::vec3 position, float radius, glm::vec3 color, glm
 	glDrawElements(GL_TRIANGLES, m_circleIndexCount, GL_UNSIGNED_INT, nullptr);
 	glBindVertexArray(0);
 }
-
 void Renderer::drawRect(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 rotate, float angle, std::shared_ptr<Texture> texture, glm::vec2 textureScale)
 {
 	//use the shader
@@ -261,12 +329,10 @@ void Renderer::drawRect(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 	glBindVertexArray(0);
 }
-
 void Renderer::drawLine(glm::vec2 start, glm::vec2(), glm::vec3 color, std::shared_ptr<Texture> texture)
 {
 
 }
-
 void Renderer::drawTriangle(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 rotate, float angle, std::shared_ptr<Texture> texture)
 {
 	//use the shader
@@ -300,6 +366,52 @@ void Renderer::drawTriangle(glm::vec3 position, glm::vec2 size, glm::vec3 color,
 	glBindVertexArray(m_triangleVAO);
 	glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
 	glBindVertexArray(0);
+}
+void Renderer::drawText(std::string text, glm::vec2 position, float scale, glm::vec3 color)
+{
+	//use text and send all uniforms to shader
+	m_textShader.use();
+	m_textShader.setVec3("textColor", color);
+	m_textShader.setMat4("projection", m_projection);
+
+	//activate blending in open gl
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glActiveTexture(GL_TEXTURE0);
+	glBindVertexArray(m_textVAO);
+
+	for (const char& c : text)
+	{
+		Character character = m_characters[c];
+
+		float xpos   = position.x + character.bearing.x * scale;
+		float ypos   = position.y - (character.size.y - character.bearing.y) * scale;
+		float width  = character.size.x * scale;
+		float height = character.size.y * scale;
+
+		float vertices[6][4] =
+		{
+			{xpos,         ypos + height, 0.0f, 0.0f},
+			{xpos,         ypos,          0.0f, 1.0f},
+			{xpos + width, ypos,          1.0f, 1.0f},
+			{xpos,         ypos + height, 0.0f, 0.0f},
+			{xpos + width, ypos,          1.0f, 1.0f},
+			{xpos + width, ypos + height, 1.0f, 0.0f}
+		};
+
+		glBindTexture(GL_TEXTURE_2D, character.textureID);
+		glBindBuffer(GL_ARRAY_BUFFER, m_textVBO);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		//shift to the right bu 6 to get the pixels
+		position.x += (character.advance >> 6) * scale;
+	}
+
+	//unbind data
+	glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
 }
 
 
@@ -501,7 +613,6 @@ void Renderer::drawSphere(glm::vec3 position, float radius, glm::vec3 color, glm
 	glDrawElements(GL_TRIANGLES, m_sphereIndexCount, GL_UNSIGNED_INT, nullptr);
 	glBindVertexArray(0);
 }
-
 void Renderer::drawCube(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 rotate, float angle, std::shared_ptr<Texture> texture)
 {
 	//use the shader
@@ -536,7 +647,6 @@ void Renderer::drawCube(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm
 	glDrawElements(GL_TRIANGLES, m_cubeIndexCount, GL_UNSIGNED_INT, nullptr);
 	glBindVertexArray(0);
 }
-
 void Renderer::drawStars(unsigned int VAO, unsigned starCount, const glm::vec3& cameraPos)
 {
 	m_starShader.use();
@@ -556,14 +666,13 @@ void Renderer::drawStars(unsigned int VAO, unsigned starCount, const glm::vec3& 
 
 
 
-
+//-------------------------------Asthetics------------------------------------
 
 void Renderer::setBackgroundColor(glm::vec4 color)
 {
 	glClearColor(color.r, color.g, color.b, color.a);
 
 }
-
 void Renderer::updateMatrix(const glm::mat4& perspective, const glm::mat4& view, const glm::vec3& position)
 {
 	m_projection = perspective;
@@ -573,7 +682,6 @@ void Renderer::updateMatrix(const glm::mat4& perspective, const glm::mat4& view,
 	m_normalShader.use();
 	m_normalShader.setVec3("viewPos", position);
 }
-
 void Renderer::setLight(PointLight& light)
 {
 	//set inner shader uniforms to be used for light calculation
@@ -585,7 +693,6 @@ void Renderer::setLight(PointLight& light)
 	m_normalShader.setUniformFloat("specularStrength", light.specular);
 
 }
-
 void Renderer::disableLight()
 {
 	m_normalShader.use();

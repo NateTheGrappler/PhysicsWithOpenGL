@@ -43,6 +43,8 @@ public:
     void checkButtonCollision(const glm::vec2& pos);
 
     bool detectHover(double xpos, double ypos);
+    void renderSelection(int currentIndex, std::string shape, float rotateAngle);
+    void drawSimulationName();
 
     //stuff for the stars
     void initStars();
