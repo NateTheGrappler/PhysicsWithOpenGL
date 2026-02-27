@@ -18,6 +18,8 @@ void BlackHole2D_Scene::init()
 	//set up user input
 	registerAction(GLFW_KEY_C,     "CHANGE_CAMERA");
 	registerAction(GLFW_KEY_ENTER, "CHANGE_SCENE");
+	m_engine.assets()->loadTexture("BlackHole2D", "src/res/texture/blackHole2D.png");
+	m_engine.assets()->loadTexture("BlackHole2D-Photon", "src/res/texture/BlackHole2D-Photon.png");
 
 	//set up the black hole
 	blackHole2D bh =
@@ -27,27 +29,28 @@ void BlackHole2D_Scene::init()
 		glm::vec3(1.0f, 0.0f, 2.0f),
 		80
 	};
+	//blackHole2D bh1 =
+	//{
+	//	8.54 * std::pow(10, 36),
+	//	glm::vec3(300.0f, 300.0f, 0),
+	//	glm::vec3(1.0f, 0.0f, 2.0f),
+	//	80
+	//};
 	m_blackHoles.push_back(bh);
-	std::cout << "Mass: " << bh.mass << " Radius: " << bh.r_s << " Render Radius: " << bh.getRenderRadius() << std::endl;
+	//m_blackHoles.push_back(bh1);
 
-	//set up a light ray
-	lightRay lr =
-	{
-		glm::vec3(0.0f, 300.0f, 0),
-		glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec2(1.0f, 0.0f)
-	};
-	m_lightRays.push_back(lr);
+	drawStraightRays(100);
+	//drawCircularRays(glm::vec2(200.0f, 200.0f), 128);
 
 }
 
 void BlackHole2D_Scene::update()
 {
 	//update the position of the light ray
+
 	for (int i = 0; i < m_lightRays.size(); i++)
 	{
-		m_lightRays[i].step(m_renderScale, m_engine.getDeltaTime());
-		std::cout << "X: " << m_lightRays[i].position.x << " Y: " << m_lightRays[i].position.y << std::endl;
+		if(m_lightRays[i].continueStep) { m_lightRays[i].step(m_engine.getDeltaTime(), m_blackHoles); }
 	}
 	sRender();
 }
@@ -64,7 +67,7 @@ void BlackHole2D_Scene::sRender()
 
 	for (const blackHole2D& blackHole : m_blackHoles)
 	{
-		m_engine.renderer()->drawCircle(blackHole.position, blackHole.getRenderRadius(), blackHole.color);
+		m_engine.renderer()->drawCircle(blackHole.position, blackHole.getRenderRadius(), blackHole.color, glm::vec3(1.0f, 1.0f, 1.0f), 0, m_engine.assets()->getTexture("BlackHoleSide"));
 	}
 
 	for (int i = 0; i < m_lightRays.size(); i++)
@@ -74,7 +77,6 @@ void BlackHole2D_Scene::sRender()
 
 	glEnable(GL_DEPTH_TEST);
 }
-
 void BlackHole2D_Scene::sUserInput(const Action& action)
 {
 	if (action.type() == "PRESSED")
@@ -103,8 +105,47 @@ void BlackHole2D_Scene::sUserInput(const Action& action)
 		if (action.name() == "CHANGE_SCENE") { m_engine.changeScene("MENU", std::make_shared<Scene_Menu>(m_engine), false); onEnd(); }
 	}
 }
-
 void BlackHole2D_Scene::onEnd()
 {
 	std::cout << "exited out of scene BLACK_HOLE_2D" << std::endl;
 }
+
+//light related functions
+void BlackHole2D_Scene::drawStraightRays(int num)
+{
+	m_lightRays.clear();
+
+	for (int i = 15; i < 600; i += 600/ num)
+	{
+		//set up a light ray
+		lightRay lr =
+		{
+			glm::vec3(0.0f, i, 0),
+			glm::vec3(1.0f, 1.0f, 1.0f),
+			glm::vec2(1.0f, 0.0f)
+		};
+		m_lightRays.push_back(lr);
+	}
+}
+void BlackHole2D_Scene::drawCircularRays(glm::vec2 origin, unsigned int count)
+{
+	m_lightRays.clear();
+
+	for (int i = 0; i < count; i++)
+	{
+		float angle = 2.0f * glm::pi<float>() * i / count;
+		float x = cos(angle);
+		float y = sin(angle);
+
+		//set up a light ray
+		lightRay lr =
+		{
+			glm::vec3(origin.x, origin.y, 0),
+			glm::vec3(1.0f, 1.0f, 1.0f),
+			glm::vec2(x, y)
+		};
+		m_lightRays.push_back(lr);
+	}
+}
+
+

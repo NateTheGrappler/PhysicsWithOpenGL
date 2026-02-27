@@ -279,6 +279,9 @@ void Renderer::drawCircle(glm::vec3 position, float radius, glm::vec3 color, glm
 		m_normalShader.setUniformInt("useTexture", 0);
 	}
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, position);
 	model = glm::scale(model, glm::vec3(radius, radius, 1.0f));
@@ -293,6 +296,8 @@ void Renderer::drawCircle(glm::vec3 position, float radius, glm::vec3 color, glm
 	//make the actual draw call
 	glBindVertexArray(m_circleVAO);
 	glDrawElements(GL_TRIANGLES, m_circleIndexCount, GL_UNSIGNED_INT, nullptr);
+
+	glDisable(GL_BLEND);
 	glBindVertexArray(0);
 }
 void Renderer::drawRect(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 rotate, float angle, std::shared_ptr<Texture> texture, glm::vec2 textureScale)
@@ -751,7 +756,8 @@ void Renderer::drawTrail(std::vector<glm::vec2>& positions, glm::vec3 color)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glDrawArrays(GL_POINTS, 0, positions.size());
+	glLineWidth(2.0f);
+	glDrawArrays(GL_LINE_STRIP, 0, positions.size());
 
 	glDisable(GL_BLEND);
 	glBindVertexArray(0);

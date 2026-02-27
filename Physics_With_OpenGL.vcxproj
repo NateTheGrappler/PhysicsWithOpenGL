@@ -153,12 +153,16 @@
     <ClInclude Include="src\vendor\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="README.md" />
     <None Include="src\res\shader\basic.shader" />
     <None Include="src\res\shader\starShader.shader" />
     <None Include="src\res\shader\text.shader" />
     <None Include="src\res\shader\trail.shader" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="src\res\texture\blackHole2D-Photon.png" />
+    <Image Include="src\res\texture\blackHole2D.png" />
+    <Image Include="src\res\texture\BlackHoleSide.png" />
     <Image Include="src\res\texture\brick.jpg" />
     <Image Include="src\res\texture\RightArrow.png" />
     <Image Include="src\res\texture\squidimus.png" />

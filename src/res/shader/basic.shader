@@ -53,6 +53,7 @@ uniform float specularStrength;
 void main()
 {
 	vec3 baseColor = useTexture == 1 ? texture(tex, TexCoord * uvScale).rgb : color;
+	float alpha = useTexture == 1 ? texture(tex, TexCoord * uvScale).a : 1.0;
 
 	//ambient base light level
 	vec3 ambient = ambientStrength * lightColor;
@@ -70,5 +71,5 @@ void main()
 	vec3 specular      = specularStrength * spec * lightColor;
 
 	vec3 result = (ambient + diffuse + specular) * baseColor;
-	FragColor   = vec4(result, 1.0);
+	FragColor   = vec4(result, alpha);
 };

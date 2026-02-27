@@ -38,6 +38,7 @@ void Scene_Menu::init()
     m_engine.assets()->loadTexture("VenusDirt", "src/res/texture/VenusDirt.png");
     m_engine.assets()->loadTexture("topBanner", "src/res/texture/topBanner.png");
     m_engine.assets()->loadTexture("RightArrow", "src/res/texture/RightArrow.png");
+    m_engine.assets()->loadTexture("BlackHoleSide", "src/res/texture/BlackHoleSide.png");
     
     registerAction(GLFW_KEY_LEFT,  "ROTATE_CLOCKWISE");
     registerAction(GLFW_KEY_RIGHT, "ROTATE_COUNTER_CLOCKWISE");
@@ -195,8 +196,6 @@ void Scene_Menu::calculateBasePositions()
     //do the math to set the vectors of position for the intital objects
     for (int i = 0; i < m_numberOfObjects; i++)
     {
-        float rotateAngle = glfwGetTime();;
-
         //set up points around the circle
         float angle = 2.0f * glm::pi<float>() * i / m_numberOfObjects;
         float x = cos(angle) * m_radius;
@@ -362,8 +361,6 @@ void Scene_Menu::changeScene()
     if (m_currentLookIndex == 9)  { m_engine.changeScene("2D_BLACK_HOLE", std::make_shared<BlackHole2D_Scene>(m_engine), false); }
     if (m_currentLookIndex == 10) { m_engine.changeScene("2D_BLACK_HOLE", std::make_shared<BlackHole2D_Scene>(m_engine), false); }
 }
-
-
 
 void Scene_Menu::initStars()
 {
