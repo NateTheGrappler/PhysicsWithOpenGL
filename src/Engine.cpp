@@ -50,6 +50,24 @@ void Engine::init()
 	m_renderer = std::make_shared<Renderer>();
 	m_assets   = std::make_shared<AssetManager>();
 
+
+	//set up stuff for ImGUI
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+	float main_scale = ImGui_ImplGlfw_GetContentScaleForMonitor(glfwGetPrimaryMonitor());
+
+	ImGui::StyleColorsDark();
+	ImGuiStyle& style = ImGui::GetStyle();
+	style.ScaleAllSizes(main_scale);
+	style.FontScaleDpi = main_scale;
+
+	ImGui_ImplGlfw_InitForOpenGL(m_window, true);
+	ImGui_ImplOpenGL3_Init("#version 330");
+
 	//change the scene pointer to be the new menu scene
 	changeScene("MENU", std::make_shared<Scene_Menu>(*this), false);
 }
@@ -58,18 +76,39 @@ void Engine::run()
 {
 	while (isRunning() && !glfwWindowShouldClose(m_window))
 	{
+
 		//calculate delta time
 		float currentFrame = glfwGetTime();
 		m_deltaTime = currentFrame - m_lastFrame;
 		m_lastFrame = currentFrame;
 
+		//calculate FPS:
+		m_fpsTimer += m_deltaTime;
+		m_frameCount++;
+		if (m_fpsTimer >= 1.0f)
+		{
+			m_currentFps = m_frameCount / m_fpsTimer;
+			m_frameCount = 0;
+			m_fpsTimer = 0.0f;
+		}
+
+		//intake user input from keyboard or mouse
+		glfwPollEvents();
 		sUserInput(m_window);
+
+		//ImGui Startup
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
 
 		//run the update scene for the scene that you currently ahve
 		currentScene()->update();
 
+		//End imGui rendering
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 		glfwSwapBuffers(m_window);
-		glfwPollEvents();
 	}
 
 	//close glfw cleanly

@@ -27,8 +27,6 @@ public:
         float getRenderRadius() const { return static_cast<float>(r_s * renderScale); }
         void calculateR_S(double speedofLight, double G) { r_s = (2 * G * mass) / (speedofLight * speedofLight); }
     };
-
-
     struct rayState
     {
         float r;    //radius value away from bh
@@ -36,7 +34,6 @@ public:
         float dr;   //change in radius from bh over time
         float dphi; //change in the angle over time
     };
-
 
     //light rays that follow polar coordinates when moving around the black hole (only work for one whole at a time)
     struct lightRayPolar
@@ -181,8 +178,7 @@ public:
                 trail.erase(trail.begin());
         }
     };
-
-
+    //cartesian coordinates that calculate velcoity adn acceleration based on multiple black holes at a time
     struct lightRayCartesian
     {
         //the basic stuff for rendering
@@ -319,6 +315,7 @@ public:
     void update() override;
     void sRender() override;
     void sUserInput(const Action& action) override;
+    void sGUI();
     void onEnd() override;
 
     void drawStraightRays(int num);

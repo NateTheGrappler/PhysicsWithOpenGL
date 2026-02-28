@@ -26,6 +26,10 @@ private:
 	SceneMap					  m_SceneMap;
 	std::unordered_map<int, int>  m_prevKeyStates;
 
+	float m_fpsTimer = 0.0f;
+	int   m_frameCount = 0;
+	float m_currentFps = 0.0f;
+
 	float m_deltaTime = 0.0f;
 	float m_lastFrame = 0.0f;
 
@@ -47,5 +51,7 @@ public:
 	int width()  const { return m_WIDTH; };
 	std::shared_ptr<Renderer> renderer()   const { return m_renderer; }
 	std::shared_ptr<AssetManager> assets() const { return m_assets; }
+
+	float getFPS() const { return m_currentFps; }
 	
 };

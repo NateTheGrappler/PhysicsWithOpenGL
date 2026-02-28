@@ -39,11 +39,10 @@ void BlackHole2D_Scene::init()
 	m_blackHoles.push_back(bh);
 	m_blackHoles.push_back(bh1);
 
-	drawStraightRays(100);
-	//drawCircularRays(glm::vec2(200.0f, 200.0f), 128);
+	//drawStraightRays(100);
+	drawCircularRays(glm::vec2(200.0f, 200.0f), 128);
 
 }
-
 void BlackHole2D_Scene::update()
 {
 	//update the position of the light ray
@@ -52,6 +51,7 @@ void BlackHole2D_Scene::update()
 	{
 		if(m_lightRays[i].continueStep) { m_lightRays[i].step(m_engine.getDeltaTime(), m_blackHoles); }
 	}
+	sGUI();
 	sRender();
 }
 
@@ -104,6 +104,41 @@ void BlackHole2D_Scene::sUserInput(const Action& action)
 		}
 		if (action.name() == "CHANGE_SCENE") { m_engine.changeScene("MENU", std::make_shared<Scene_Menu>(m_engine), false); onEnd(); }
 	}
+}
+void BlackHole2D_Scene::sGUI()
+{
+	ImGui::Begin("Hello, World!");
+
+	//set up tab items
+	if (ImGui::BeginTabBar("FunctionsTabs"))
+	{
+		if (ImGui::BeginTabItem("Light Rays"))
+		{
+			ImGui::Text("FPS: %.1f", m_engine.getFPS());
+			ImGui::Text("Light Rays: %d", (int)m_lightRays.size());
+			ImGui::Separator();
+
+			if (ImGui::Button("Straight Rays")) { drawStraightRays(100); }
+			if (ImGui::Button("Circular Rays")) { drawCircularRays(glm::vec2(200.0f, 200.0f), 256); }
+
+			ImGui::EndTabItem();
+		}
+		if (ImGui::BeginTabItem("Black Holes"))
+		{
+			ImGui::Text("FPS: %.1f", m_engine.getFPS());
+			ImGui::Text("Light Rays: %d", (int)m_lightRays.size());
+			ImGui::Separator();
+
+			if (ImGui::Button("Straight Rays")) { drawStraightRays(100); }
+			if (ImGui::Button("Circular Rays")) { drawCircularRays(glm::vec2(200.0f, 200.0f), 256); }
+
+			ImGui::EndTabItem();
+		}
+	}
+
+
+	ImGui::EndTabBar();
+	ImGui::End();
 }
 void BlackHole2D_Scene::onEnd()
 {
