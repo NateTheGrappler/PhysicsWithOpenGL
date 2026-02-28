@@ -32,6 +32,8 @@ class Camera
 {
 public:
 	bool    m_isOrtho = true;
+	int     m_windowWidth = 800.0f;
+	int     m_windowHeight = 600.0f;
 	virtual void processInput(GLFWwindow* window, float deltaTime) = 0;
 	virtual void setOrthographic(float left, float right, float bottom, float top, float near, float far) = 0;
 	virtual void setPosition(const glm::vec3& position) = 0;

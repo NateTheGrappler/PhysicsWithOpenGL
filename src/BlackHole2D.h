@@ -304,8 +304,7 @@ private:
     double m_renderScale = 1e-11;   //to scale things down from meters to pixels
 
     //coesmetic stuff
-    std::map<int, std::pair<std::string, double>> m_bhData = 
-    { 
+    std::map<int, std::pair<std::string, double>> m_bhData = { 
         {0, { "Messier 87",    4.8e42}},
         {1, { "Sagittarius A", 8.54e36}},
         {2, { "TON 618",       1.31e41}},
@@ -315,6 +314,7 @@ private:
     std::string m_bhTextureData[3] = {"BlackHole2D", "BlackHole2D-Photon", "BlackHoleSide"};
 
     bool                     m_cameraIsStatic = true;
+    bool                     m_openGUI = false;
     std::unique_ptr<Camera>  m_camera;
 
 

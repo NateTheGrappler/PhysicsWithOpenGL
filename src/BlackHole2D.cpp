@@ -70,7 +70,6 @@ void BlackHole2D_Scene::sRender()
 	{
 		m_engine.renderer()->drawCircle(blackHole.position, blackHole.getRenderRadius(), blackHole.color, glm::vec3(1.0f, 1.0f, 1.0f), 0, m_engine.assets()->getTexture(blackHole.texture));
 	}
-
 	for (int i = 0; i < m_lightRays.size(); i++)
 	{
 		m_engine.renderer()->drawTrail(m_lightRays[i].trail, m_lightRays[i].color);
@@ -108,14 +107,15 @@ void BlackHole2D_Scene::sUserInput(const Action& action)
 }
 void BlackHole2D_Scene::sGUI()
 {
-	ImGui::Begin("Simulation Control");
+	ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
+	ImGui::Begin("Simulation Control", &m_openGUI);
 
-	//set up tab items
 	if (ImGui::BeginTabBar("FunctionsTabs"))
 	{
 		//the light ray handling
 		if (ImGui::BeginTabItem("Light Rays"))
 		{
+
 			ImGui::Text("| Light Rays: %d", (int)m_lightRays.size());
 			ImGui::SameLine();
 			ImGui::Text("FPS: %.1f", m_engine.getFPS());
@@ -240,7 +240,6 @@ void BlackHole2D_Scene::sGUI()
 			ImGui::EndTabItem();
 		}
 	}
-
 
 	ImGui::EndTabBar();
 	ImGui::End();

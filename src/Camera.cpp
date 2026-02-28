@@ -16,6 +16,9 @@ staticCamera::staticCamera(const glm::vec3& position, const glm::vec3& target)
 void staticCamera::processInput(GLFWwindow* window, float deltaTime)
 {
 	//the camera should not accept input as well
+	glfwGetWindowSize(window, &m_windowWidth, &m_windowHeight);
+	//std::cout << "Height: " << m_windowHeight << " Width: " << m_windowWidth << std::endl;
+
 }
 
 glm::mat4 staticCamera::getViewMatrix()
@@ -39,7 +42,7 @@ void staticCamera::setOrthographic(float left, float right, float bottom, float 
 
 void staticCamera::setPerspective()
 {
-	m_projection = glm::perspective(glm::radians(m_fov), 800.0f / 600.0f, 0.1f, 100.0f);
+	m_projection = glm::perspective(glm::radians(m_fov), (float)m_windowWidth / (float)m_windowHeight, 0.1f, 100.0f);
 	m_isOrtho = false;
 }
 
@@ -86,6 +89,8 @@ flyCamera::flyCamera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
 
 void flyCamera::processInput(GLFWwindow* window, float deltaTime)
 {
+
+	glfwGetWindowSize(window, &m_windowWidth, &m_windowHeight);
 
 	//handle the camera movement stuff
 	double xpos, ypos;
@@ -147,7 +152,7 @@ void flyCamera::setOrthographic(float left, float right, float bottom, float top
 
 void flyCamera::setPerspective()
 {
-	m_projectionMatrix = glm::perspective(glm::radians(m_zoom), 800.0f / 600.0f, 0.1f, 100.0f);
+	m_projectionMatrix = glm::perspective(glm::radians(m_zoom), (float)m_windowWidth / (float)m_windowHeight, 0.1f, 100.0f);
 	m_isOrtho = false;
 }
 
