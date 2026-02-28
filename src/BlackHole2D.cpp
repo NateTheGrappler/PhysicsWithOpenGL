@@ -1,4 +1,4 @@
-#include "BlackHole2D.h"
+﻿#include "BlackHole2D.h"
 #include "Scene_Menu.h"
 
 BlackHole2D_Scene::BlackHole2D_Scene(Engine& gameEngine)
@@ -25,19 +25,19 @@ void BlackHole2D_Scene::init()
 	blackHole2D bh =
 	{
 		8.54 * std::pow(10, 36),
-		glm::vec3(500.0f, 300.0f, 0),
+		glm::vec3(600.0f, 300.0f, 0),
 		glm::vec3(1.0f, 0.0f, 2.0f),
 		80
 	};
-	//blackHole2D bh1 =
-	//{
-	//	8.54 * std::pow(10, 36),
-	//	glm::vec3(300.0f, 300.0f, 0),
-	//	glm::vec3(1.0f, 0.0f, 2.0f),
-	//	80
-	//};
+	blackHole2D bh1 =
+	{
+		8.54 * std::pow(10, 36),
+		glm::vec3(200.0f, 300.0f, 0),
+		glm::vec3(1.0f, 0.0f, 2.0f),
+		80
+	};
 	m_blackHoles.push_back(bh);
-	//m_blackHoles.push_back(bh1);
+	m_blackHoles.push_back(bh1);
 
 	drawStraightRays(100);
 	//drawCircularRays(glm::vec2(200.0f, 200.0f), 128);
@@ -118,7 +118,7 @@ void BlackHole2D_Scene::drawStraightRays(int num)
 	for (int i = 15; i < 600; i += 600/ num)
 	{
 		//set up a light ray
-		lightRay lr =
+		lightRayCartesian lr =
 		{
 			glm::vec3(0.0f, i, 0),
 			glm::vec3(1.0f, 1.0f, 1.0f),
@@ -138,7 +138,7 @@ void BlackHole2D_Scene::drawCircularRays(glm::vec2 origin, unsigned int count)
 		float y = sin(angle);
 
 		//set up a light ray
-		lightRay lr =
+		lightRayCartesian lr =
 		{
 			glm::vec3(origin.x, origin.y, 0),
 			glm::vec3(1.0f, 1.0f, 1.0f),
