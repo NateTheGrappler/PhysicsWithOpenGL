@@ -25,14 +25,14 @@ void BlackHole2D_Scene::init()
 	blackHole2D bh =
 	{
 		8.54 * std::pow(10, 36),
-		glm::vec3(600.0f, 300.0f, 0),
+		glm::vec3(400.0f, 450.0f, 0),
 		glm::vec3(1.0f, 0.0f, 2.0f),
 		80
 	};
 	blackHole2D bh1 =
 	{
 		8.54 * std::pow(10, 36),
-		glm::vec3(200.0f, 300.0f, 0),
+		glm::vec3(400.0f, 150.0f, 0),
 		glm::vec3(1.0f, 0.0f, 2.0f),
 		80
 	};

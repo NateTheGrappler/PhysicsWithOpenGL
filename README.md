@@ -100,7 +100,8 @@ CMake to be added in the future
 - GLFW
 - GLAD
 - GLM
-- stb_image_
+- stb_image
+- imGui 1.92.6
 
 ### Status
 Under Development 1 / 12 finished

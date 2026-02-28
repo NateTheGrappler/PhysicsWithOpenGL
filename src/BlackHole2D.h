@@ -250,9 +250,9 @@ public:
             //update velocity values on first run
             if (!m_intialized) { velocity = glm::normalize(direction) * speed; m_intialized = true; }
 
-            //check collisions occuring with black holes given that it is not as simple now with cartesian coords
             for (const blackHole2D bh : blackholes)
             {
+                //collision detection
                 glm::vec2 bhPos(bh.position.x, bh.position.y);
                 float dist = glm::length(pos2 - bhPos);
                 if (dist <= bh.getRenderRadius())
@@ -269,21 +269,20 @@ public:
                     return { v, accleration };
             };
 
-            //first rk4 step - k1
+            //r4k steps 1-4
             std::pair<glm::vec2, glm::vec2> k1 = deriv(pos2, velocity);
             glm::vec2 dp1 = k1.first, dv1 = k1.second;
 
-            //second rk4 step - k2
             std::pair<glm::vec2, glm::vec2> k2 = deriv(pos2 + dp1 * (deltaTime / 2), velocity + dv1 * (deltaTime/2));
             glm::vec2 dp2 = k2.first, dv2 = k2.second;
 
-            //third rk4 step - k3
             std::pair<glm::vec2, glm::vec2> k3 = deriv(pos2 + dp2 * (deltaTime / 2.0f), velocity + dv2 * (deltaTime / 2.0f));
             glm::vec2 dp3 = k3.first, dv3 = k3.second;
 
-            //fourth rk4 step - k3
             std::pair<glm::vec2, glm::vec2> k4 = deriv(pos2 + dp3 * deltaTime, velocity + dv3 * deltaTime);
             glm::vec2 dp4 = k4.first, dv4 = k4.second;
+
+
 
             //update the position and velocity based on the average of all 4 steps, weighted on the first and second step
             pos2     += (deltaTime / 6.0f) * (dp1 + 2.0f * dp2 + 2.0f * dp3 + dp4);
