@@ -48,9 +48,12 @@ void BlackHole2D_Scene::update()
 {
 	//update the position of the light ray
 
-	for (int i = 0; i < m_lightRays.size(); i++)
+	if (!m_paused)
 	{
-		if(m_lightRays[i].continueStep) { m_lightRays[i].step(m_engine.getDeltaTime(), m_blackHoles); }
+		for (int i = 0; i < m_lightRays.size(); i++)
+		{
+			if (m_lightRays[i].continueStep) { m_lightRays[i].step(m_engine.getDeltaTime(), m_blackHoles); }
+		}
 	}
 	sGUI();
 	sRender();
@@ -119,11 +122,137 @@ void BlackHole2D_Scene::sGUI()
 			ImGui::Text("| Light Rays: %d", (int)m_lightRays.size());
 			ImGui::SameLine();
 			ImGui::Text("FPS: %.1f", m_engine.getFPS());
-
 			ImGui::Separator();
 
-			if (ImGui::Button("Straight Rays")) { drawStraightRays(100); }
-			if (ImGui::Button("Circular Rays")) { drawCircularRays(glm::vec2(200.0f, 200.0f), 256); }
+			//-----------------------------------Ray Behavior-----------------------------
+
+			if (ImGui::CollapsingHeader("Ray Properties"))
+			{
+				static int rayMode = 0;
+				//----------------------------Cartesian Coords--------------------------------------
+
+				ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
+				ImGui::Text("Cartesian: ");
+				ImGui::PopFont();
+				ImGui::SameLine();
+				ImGui::RadioButton("##cartesian", &rayMode, 0);
+				ImGui::Separator();
+
+				//whether or not the draws disapear
+				ImGui::Text("Static Draw  :");
+				ImGui::SameLine();
+				if (ImGui::Checkbox("##static_draw", &m_staticDrawRays)) { }
+
+				//the speed of the simulation
+				ImGui::Text("Light Speed  :");
+				ImGui::SameLine();
+				ImGui::SetNextItemWidth(200);
+				if (ImGui::SliderFloat("##slider_speed", &m_lightSpeed, 100.0f, 300.0f, "px/s: %.1f")) {}
+
+				//whether or not continously spawn the lights
+				ImGui::Text("Continous    :");
+				ImGui::SameLine();
+				if (ImGui::Checkbox("##continousSpawn", &m_contiousSpawn)) { if (m_staticDrawRays) { m_staticDrawRays = false; } }
+
+				//the strength factor for the blackholes
+				ImGui::Text("Strength     :");
+				ImGui::SameLine();
+				ImGui::SetNextItemWidth(200);
+				if (ImGui::SliderFloat("##slider_strength", &m_attractionStrength, 0.7f, 1.5f, "g: %.1f")) {}
+				ImGui::Separator();
+
+				//----------------------------Polar Coords--------------------------------------
+
+				ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
+				ImGui::Text("Polar:      ");
+				ImGui::PopFont();
+				ImGui::SameLine();
+				ImGui::RadioButton("##polar", &rayMode, 1);
+				ImGui::Separator();
+
+				ImGui::Text("Static Draw  :");
+				ImGui::SameLine();
+				if (ImGui::Checkbox("##static_draw", &m_staticDrawRays)) {}
+
+				ImGui::Text("Light Speed  :");
+				ImGui::SameLine();
+				ImGui::SetNextItemWidth(200);
+				if (ImGui::SliderFloat("##slider_speed", &m_lightSpeed, 100.0f, 300.0f, "px/s: %.1f")) {}
+
+				ImGui::Text("Continous    :");
+				ImGui::SameLine();
+				if (ImGui::Checkbox("##continousSpawn", &m_contiousSpawn)) { if (m_staticDrawRays) { m_staticDrawRays = false; } }
+
+				ImGui::Text("Strength     :");
+				ImGui::SameLine();
+				ImGui::SetNextItemWidth(200);
+				if (ImGui::SliderFloat("##slider_strength", &m_attractionStrength, 0.7f, 1.5f, "g: %.1f")) {}
+				ImGui::Separator();
+
+				m_usePolar = (rayMode == 1);
+			}
+
+			//-----------------------Simulation Properties---------------------------
+			if (ImGui::CollapsingHeader("Simulation Properties"))
+			{
+				float summonMode = 0;
+
+				//selecting click type
+				ImGui::Text("Select Way To Summon Rays On Click: ");
+
+				ImGui::Text("Side Summon   :");
+				ImGui::SameLine();
+				ImGui::RadioButton("##Side", &m_lightClickMode, 0);
+				ImGui::SameLine();
+				ImGui::SetNextItemWidth(100);
+				if (ImGui::InputInt("##amount_side", &m_summonAmounts[0], 0, 0)) {}
+
+
+				ImGui::Text("Circle Summon :");
+				ImGui::SameLine();
+				ImGui::RadioButton("##circle", &m_lightClickMode, 1);
+				ImGui::SameLine();
+				ImGui::SetNextItemWidth(100);
+				if (ImGui::InputInt("##amount_circle", &m_summonAmounts[1], 0, 0)) {}
+
+				ImGui::Text("Aim Summon    :");
+				ImGui::SameLine();
+				ImGui::RadioButton("##aim", &m_lightClickMode, 2);
+				ImGui::SameLine();
+				ImGui::SetNextItemWidth(100);
+				if (ImGui::InputInt("##amount_aim", &m_summonAmounts[2], 0, 0), ImGuiInputTextFlags_ReadOnly) { m_summonAmounts[2] = 1; }
+
+				if (ImGui::Button("Clear Rays"))
+				{
+					m_lightRays.clear();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Clear Black Holes"))
+				{
+					m_blackHoles.clear();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Pause"))
+				{
+					m_paused = !m_paused;
+				}
+			}
+
+
+			
+			//set the behavior of the rays 
+			// - polar / cartesian
+			// - stay or disappear upon hitting something
+			// - speed and strength manipulation
+			// - continous spawning or static per click
+
+			//set the click type that determines if rays spawn from side / circle / direction
+			//add in the ability to clear the rays 
+			//pause and clear the simulation as well
+			// - ray count / amount of rays to pass to each function 
+
+			//if (ImGui::Button("Straight Rays")) { drawStraightRays(100); }
+			//if (ImGui::Button("Circular Rays")) { drawCircularRays(glm::vec2(200.0f, 200.0f), 256); }
 
 			ImGui::EndTabItem();
 		}

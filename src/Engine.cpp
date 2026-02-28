@@ -65,6 +65,10 @@ void Engine::init()
 	style.ScaleAllSizes(main_scale);
 	style.FontScaleDpi = main_scale;
 
+	//add larger font for the headers
+	io.Fonts->AddFontDefault();
+	io.Fonts->AddFontFromFileTTF("src/res/fonts/arialnarrow.ttf", 18.0f);
+
 	ImGui_ImplGlfw_InitForOpenGL(m_window, true);
 	ImGui_ImplOpenGL3_Init("#version 330");
 

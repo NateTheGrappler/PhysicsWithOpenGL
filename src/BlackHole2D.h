@@ -240,7 +240,7 @@ public:
         void step(float deltaTime, const std::vector<blackHole2D>& blackholes)
         {
             //assurance for mitigating light rays from steping into bh
-            if (!continueStep) { return; }
+            //if (!continueStep) { return; }
 
             glm::vec2 pos2(position.x, position.y);
 
@@ -254,7 +254,7 @@ public:
                 float dist = glm::length(pos2 - bhPos);
                 if (dist <= bh.getRenderRadius())
                 {
-                    continueStep = false;
+                    //continueStep = false;
                     return;
                 }
             }
@@ -313,8 +313,17 @@ private:
     };
     std::string m_bhTextureData[3] = {"BlackHole2D", "BlackHole2D-Photon", "BlackHoleSide"};
 
+    //imgui bool set stuff
     bool                     m_cameraIsStatic = true;
     bool                     m_openGUI = false;
+    bool                     m_usePolar = true;
+    bool                     m_staticDrawRays;
+    bool                     m_contiousSpawn;
+    float                    m_lightSpeed = 200.0f;
+    float                    m_attractionStrength = 1.2f;
+
+    int                      m_lightClickMode = 0;
+    std::map<int, int>       m_summonAmounts = { {0, 100}, {1, 128}, {2, 1} }; //side/top, circle, aim
     std::unique_ptr<Camera>  m_camera;
 
 
