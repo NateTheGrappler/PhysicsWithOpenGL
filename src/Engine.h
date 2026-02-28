@@ -45,6 +45,7 @@ public:
 	void sUserInput(GLFWwindow* window);
 
 	GLFWwindow* getWindow();
+	glm::vec2 windowSize();
 	bool isRunning();
 	float getDeltaTime();
 	int height() const { return m_HEIGHT;};

@@ -195,6 +195,13 @@ GLFWwindow* Engine::getWindow()
 {
 	return m_window;
 }
+glm::vec2 Engine::windowSize()
+{
+	int width, height;
+	glfwGetWindowSize(m_window, &width, &height);
+	return glm::vec2(width, height);
+}
+
 bool Engine::isRunning()
 {
 	return m_running;

@@ -1,5 +1,6 @@
 ﻿#include "BlackHole2D.h"
 #include "Scene_Menu.h"
+#include <random>
 
 BlackHole2D_Scene::BlackHole2D_Scene(Engine& gameEngine)
 	: Scene(gameEngine)
@@ -31,7 +32,7 @@ void BlackHole2D_Scene::init()
 	};
 	blackHole2D bh1 =
 	{
-		8.54 * std::pow(10, 36),
+		4.8e42,
 		glm::vec3(400.0f, 150.0f, 0),
 		glm::vec3(1.0f, 0.0f, 2.0f),
 		80
@@ -67,7 +68,7 @@ void BlackHole2D_Scene::sRender()
 
 	for (const blackHole2D& blackHole : m_blackHoles)
 	{
-		m_engine.renderer()->drawCircle(blackHole.position, blackHole.getRenderRadius(), blackHole.color, glm::vec3(1.0f, 1.0f, 1.0f), 0, m_engine.assets()->getTexture("BlackHoleSide"));
+		m_engine.renderer()->drawCircle(blackHole.position, blackHole.getRenderRadius(), blackHole.color, glm::vec3(1.0f, 1.0f, 1.0f), 0, m_engine.assets()->getTexture(blackHole.texture));
 	}
 
 	for (int i = 0; i < m_lightRays.size(); i++)
@@ -107,15 +108,18 @@ void BlackHole2D_Scene::sUserInput(const Action& action)
 }
 void BlackHole2D_Scene::sGUI()
 {
-	ImGui::Begin("Hello, World!");
+	ImGui::Begin("Simulation Control");
 
 	//set up tab items
 	if (ImGui::BeginTabBar("FunctionsTabs"))
 	{
+		//the light ray handling
 		if (ImGui::BeginTabItem("Light Rays"))
 		{
+			ImGui::Text("| Light Rays: %d", (int)m_lightRays.size());
+			ImGui::SameLine();
 			ImGui::Text("FPS: %.1f", m_engine.getFPS());
-			ImGui::Text("Light Rays: %d", (int)m_lightRays.size());
+
 			ImGui::Separator();
 
 			if (ImGui::Button("Straight Rays")) { drawStraightRays(100); }
@@ -123,14 +127,115 @@ void BlackHole2D_Scene::sGUI()
 
 			ImGui::EndTabItem();
 		}
+
+		//creating / deleting blackholes
 		if (ImGui::BeginTabItem("Black Holes"))
 		{
+			ImGui::Text("| Black Holes: %d", (int)m_blackHoles.size());
+			ImGui::SameLine();
 			ImGui::Text("FPS: %.1f", m_engine.getFPS());
-			ImGui::Text("Light Rays: %d", (int)m_lightRays.size());
 			ImGui::Separator();
 
-			if (ImGui::Button("Straight Rays")) { drawStraightRays(100); }
-			if (ImGui::Button("Circular Rays")) { drawCircularRays(glm::vec2(200.0f, 200.0f), 256); }
+
+
+			if (ImGui::CollapsingHeader("Black Hole List", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+
+				//black hole data & manipulation
+				for (int i = 0; i < m_blackHoles.size(); i++)
+				{
+					blackHole2D& bh = m_blackHoles[i];
+
+					std::string label = bh.name + " - " + std::to_string(i);
+					if (ImGui::TreeNode(label.c_str()))
+					{
+						//-----------------------------Delete Button-------------------------------------
+						ImGui::SameLine();
+						if (ImGui::SmallButton(("Delete##" + std::to_string(i)).c_str()))
+						{
+							 m_blackHoles.erase(m_blackHoles.begin() + i);
+							 i--;
+						}
+
+						//-----------------------------Stats-------------------------------------
+
+						ImGui::Separator();
+						ImGui::Text("Stats: ");
+						ImGui::Text("Schwarzschild radius: (%.1f)", bh.r_s);
+						ImGui::Text("Rendering radius    : (%.1f)", bh.getRenderRadius());
+						ImGui::Text("Total Mass Value    : (%.1f)", bh.mass);
+						ImGui::Text("Name                : (%s)", bh.name.c_str());
+
+						//------------------------Position Changing------------------------------
+						ImGui::Separator();
+						ImGui::Text("Current Position: (%.1f, %.1f)", bh.position.x, bh.position.y);
+
+						// Set consistent width for all controls
+						const float controlWidth = 120.0f;
+
+						// X input and slider
+						ImGui::Text("X:");
+						ImGui::SameLine();
+						ImGui::SetNextItemWidth(controlWidth);
+						if (ImGui::InputFloat("##input_x", &bh.position.x, 0.0f, 0.0f, "%.1f")) {}
+
+						ImGui::SameLine();
+						ImGui::SetNextItemWidth(controlWidth * 1.5f); // Sliders can be wider
+						if (ImGui::SliderFloat("##slider_x", &bh.position.x, 0, (float)m_engine.windowSize().x, "px: %.1f")) {}
+
+						// Y input and slider
+						ImGui::Text("Y:");
+						ImGui::SameLine();
+						ImGui::SetNextItemWidth(controlWidth);
+						if (ImGui::InputFloat("##input_y", &bh.position.y, 0.0f, 0.0f, "%.1f")) {}
+
+						ImGui::SameLine();
+						ImGui::SetNextItemWidth(controlWidth * 1.5f);
+						if (ImGui::SliderFloat("##slider_y", &bh.position.y, 0, (float)m_engine.windowSize().y, "px: %.1f")) {}
+
+						//-----------------------------Resizing-------------------------------------
+						ImGui::Separator();
+						ImGui::Text("Scale: ");
+						ImGui::SameLine();
+						ImGui::SetNextItemWidth(200);
+						float pixelRadius = 80;
+						if (ImGui::SliderFloat("##slider_scale", &pixelRadius, 1, 160, "px: %.1f")) { bh.calculateRenderScale(pixelRadius); }
+
+						ImGui::TreePop();
+					}
+				}
+
+				//black hole creation
+				ImGui::Separator();
+				if (ImGui::Button("Create New"))
+				{
+					//randoms seed generation (once)
+					static std::random_device rd; 
+					static std::mt19937 rng(rd());
+					std::uniform_real_distribution<float> dist(0.0f, 4.0f);
+					std::uniform_real_distribution<float> tex(0.0f, 3.0f);
+
+					//index for data clamped to be within bounds
+					int index = static_cast<int>(dist(rng));
+					int indexText = static_cast<int>(tex(rng));
+					index = std::min(index, (int)m_bhData.size() - 1);
+
+					std::pair<std::string, double> data = m_bhData[index];
+					blackHole2D newBH =
+					{
+						data.second,
+						glm::vec3(400.0f, 300.0f, 0),
+						glm::vec3(1.0f, 0.0f, 2.0f),
+						80
+					};
+					newBH.name = data.first;
+					newBH.texture = m_bhTextureData[indexText];
+					m_blackHoles.push_back(newBH);
+				}
+			}
+
+			//if (ImGui::Button("Straight Rays")) { drawStraightRays(100); }
+			//if (ImGui::Button("Circular Rays")) { drawCircularRays(glm::vec2(200.0f, 200.0f), 256); }
 
 			ImGui::EndTabItem();
 		}

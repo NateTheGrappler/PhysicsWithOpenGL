@@ -7,12 +7,13 @@ class BlackHole2D_Scene : public Scene
 public:
     struct blackHole2D
     {
-        double r_s; //the event horizon (Schwarzschild radius_
+        double r_s; //the event horizon (Schwarzschild radius)
         double mass;
         glm::vec3 position;
         glm::vec3 color;
         double renderScale;
-
+        std::string name = "SagA";
+        std::string texture = "BlackHoleSide";
 
         //function to init struct
         blackHole2D(double mass, glm::vec3 position, glm::vec3 color, double pixelRadius)
@@ -301,6 +302,17 @@ private:
     std::vector<blackHole2D> m_blackHoles;
     std::vector<lightRayCartesian>    m_lightRays;
     double m_renderScale = 1e-11;   //to scale things down from meters to pixels
+
+    //coesmetic stuff
+    std::map<int, std::pair<std::string, double>> m_bhData = 
+    { 
+        {0, { "Messier 87",    4.8e42}},
+        {1, { "Sagittarius A", 8.54e36}},
+        {2, { "TON 618",       1.31e41}},
+        {3, { "Cygnus X-1",    4.21e31}},
+        {4, { "Gaia BH1",      1.9e31}}
+    };
+    std::string m_bhTextureData[3] = {"BlackHole2D", "BlackHole2D-Photon", "BlackHoleSide"};
 
     bool                     m_cameraIsStatic = true;
     std::unique_ptr<Camera>  m_camera;
