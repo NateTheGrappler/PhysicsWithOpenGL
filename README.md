@@ -105,3 +105,6 @@ CMake to be added in the future
 
 ### Status
 Under Development 1 / 12 finished
+
+
+Be safe friend, don't you dare go hollow.
