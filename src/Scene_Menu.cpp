@@ -284,7 +284,6 @@ void Scene_Menu::checkButtonCollision(const glm::vec2& pos)
 }
 bool Scene_Menu::detectHover(double xpos, double ypos)
 {
-
     if (xpos < 500 && xpos > 300 && ypos < 400 && ypos > 200)
     {
         return true;

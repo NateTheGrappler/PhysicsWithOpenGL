@@ -136,63 +136,82 @@ void Engine::changeScene(const std::string& sceneName, std::shared_ptr<Scene> sc
 
 void Engine::sUserInput(GLFWwindow* window)
 {
-	//if escape key pressed, close the window
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+
+	ImGuiIO& io = ImGui::GetIO(); //incase you want to cancel input
+
+	if (!io.WantCaptureKeyboard)
 	{
-		glfwSetWindowShouldClose(window, true);
-	}
-	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
-	{
-		//get the polygon mode
-		GLint polygonMode[2];
-		glGetIntegerv(GL_POLYGON_MODE, &polygonMode[0]);
-
-		if (polygonMode[0] == GL_LINE)
+		//if escape key pressed, close the window
+		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		{
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			glfwSetWindowShouldClose(window, true);
 		}
-		else if (polygonMode[0] == GL_FILL)
+		if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
 		{
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		}
-	}
+			//get the polygon mode
+			GLint polygonMode[2];
+			glGetIntegerv(GL_POLYGON_MODE, &polygonMode[0]);
 
-	//scene related key presses
-	const ActionMap& actionMap = currentScene()->getActionMap();
-	for (ActionMap::const_iterator it = actionMap.begin(); it != actionMap.end(); ++it)
-	{
-		int key = it->first;
-		const std::string& actionName = it->second;
-
-		int currentState = glfwGetKey(window, key);
-		int prevState    = m_prevKeyStates.count(key) ? m_prevKeyStates[key] : GLFW_RELEASE;
-
-		if (currentState == GLFW_PRESS && prevState == GLFW_RELEASE)
-		{
-			currentScene()->sUserInput(Action(actionName, "PRESSED"));
-		}
-		else if (currentState == GLFW_RELEASE && prevState == GLFW_PRESS)
-		{
-			currentScene()->sUserInput(Action(actionName, "RELEASED"));
+			if (polygonMode[0] == GL_LINE)
+			{
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			}
+			else if (polygonMode[0] == GL_FILL)
+			{
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			}
 		}
 
-		m_prevKeyStates[key] = currentState;
+		//scene related key presses
+		const ActionMap& actionMap = currentScene()->getActionMap();
+		for (ActionMap::const_iterator it = actionMap.begin(); it != actionMap.end(); ++it)
+		{
+			int key = it->first;
+			const std::string& actionName = it->second;
+
+			int currentState = glfwGetKey(window, key);
+			int prevState = m_prevKeyStates.count(key) ? m_prevKeyStates[key] : GLFW_RELEASE;
+
+			if (currentState == GLFW_PRESS && prevState == GLFW_RELEASE)
+			{
+				currentScene()->sUserInput(Action(actionName, "PRESSED"));
+			}
+			else if (currentState == GLFW_RELEASE && prevState == GLFW_PRESS)
+			{
+				currentScene()->sUserInput(Action(actionName, "RELEASED"));
+			}
+
+			m_prevKeyStates[key] = currentState;
+		}
 	}
 
 	//mouse button click kind of stuff
-	int mouseState = glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_LEFT);
-	int prevMouseState = m_prevKeyStates.count(GLFW_MOUSE_BUTTON_LEFT) ? m_prevKeyStates[GLFW_MOUSE_BUTTON_LEFT] : GLFW_RELEASE;
-
-	if (mouseState == GLFW_PRESS && prevMouseState == GLFW_RELEASE)
+	if (!io.WantCaptureMouse)
 	{
-		double mouseX, mouseY;
-		glfwGetCursorPos(m_window, &mouseX, &mouseY);
-		mouseY = 600 - mouseY;
+		//left click
+		int mouseState = glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_LEFT);
+		int prevMouseState = m_prevKeyStates.count(GLFW_MOUSE_BUTTON_LEFT) ? m_prevKeyStates[GLFW_MOUSE_BUTTON_LEFT] : GLFW_RELEASE;
 
-		Action action("MOUSE_LEFT_CLICKED", "PRESSED", glm::vec2(mouseX, mouseY));
-		currentScene()->sUserInput(action);
+		if (mouseState == GLFW_PRESS && prevMouseState == GLFW_RELEASE)
+		{
+			double mouseX, mouseY;
+			glfwGetCursorPos(m_window, &mouseX, &mouseY);
+			mouseY = 600 - mouseY;
+
+			Action action("MOUSE_LEFT_CLICKED", "PRESSED", glm::vec2(mouseX, mouseY));
+			currentScene()->sUserInput(action);
+		}
+		else if (mouseState == GLFW_RELEASE && prevMouseState == GLFW_PRESS)
+		{
+			double mouseX, mouseY;
+			glfwGetCursorPos(m_window, &mouseX, &mouseY);
+			mouseY = 600 - mouseY;
+
+			Action action("MOUSE_LEFT_CLICKED", "RELEASED", glm::vec2(mouseX, mouseY));
+			currentScene()->sUserInput(action);
+		}
+		m_prevKeyStates[GLFW_MOUSE_BUTTON_LEFT] = mouseState;
 	}
-	m_prevKeyStates[GLFW_MOUSE_BUTTON_LEFT] = mouseState;
 }
 
 GLFWwindow* Engine::getWindow()
@@ -215,15 +234,11 @@ float Engine::getDeltaTime()
 	return m_deltaTime;
 }
 
-
-
 //functions defined here that run primarily within opengl
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 }
-
-
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	Engine* engine = static_cast<Engine*>(glfwGetWindowUserPointer(window));

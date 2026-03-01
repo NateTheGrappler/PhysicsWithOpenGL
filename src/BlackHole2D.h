@@ -126,7 +126,7 @@ public:
 
             return next;
         }
-        void step(float deltaTime, const std::vector<blackHole2D>& blackHoles)
+        void step(float deltaTime, const std::vector<blackHole2D>& blackHoles, float speed)
         {
             for (auto& bh : blackHoles)
             {
@@ -139,8 +139,6 @@ public:
                     //intialize the rays polar values
                     r = std::sqrt(dx * dx + dy * dy);
                     phi = std::atan2(dy, dx);
-
-                    float speed = 200.0f; //supposed to be the speed of light, but just set a value to look nice
 
 
                     glm::vec2 radial = glm::normalize(glm::vec2(dx, dy));
@@ -237,15 +235,19 @@ public:
             return totalAcceleration;
         }
 
-        void step(float deltaTime, const std::vector<blackHole2D>& blackholes)
+        void step(float deltaTime, const std::vector<blackHole2D>& blackholes, float m_speed)
         {
             //assurance for mitigating light rays from steping into bh
             //if (!continueStep) { return; }
 
+            speed = m_speed;
             glm::vec2 pos2(position.x, position.y);
 
             //update velocity values on first run
             if (!m_intialized) { velocity = glm::normalize(direction) * speed; m_intialized = true; }
+
+            //if (trail.size() > 1 && )
+            //    trail.erase(trail.begin());
 
             for (const blackHole2D bh : blackholes)
             {
@@ -300,7 +302,8 @@ public:
 
 private:
     std::vector<blackHole2D> m_blackHoles;
-    std::vector<lightRayCartesian>    m_lightRays;
+    std::vector<lightRayCartesian>    m_lightRaysC;
+    std::vector<lightRayPolar>        m_lightRaysP;
     double m_renderScale = 1e-11;   //to scale things down from meters to pixels
 
     //coesmetic stuff
@@ -316,11 +319,13 @@ private:
     //imgui bool set stuff
     bool                     m_cameraIsStatic = true;
     bool                     m_openGUI = false;
-    bool                     m_usePolar = true;
-    bool                     m_staticDrawRays;
-    bool                     m_contiousSpawn;
+    bool                     m_usePolar = false;
+    bool                     m_staticDrawRays = true;
+    bool                     m_contiousSpawn = false;
     float                    m_lightSpeed = 200.0f;
     float                    m_attractionStrength = 1.2f;
+
+    glm::vec2                m_mouseStart; //needed for aim draw given i cant pass both a start and end
 
     int                      m_lightClickMode = 0;
     std::map<int, int>       m_summonAmounts = { {0, 100}, {1, 128}, {2, 1} }; //side/top, circle, aim
@@ -339,9 +344,11 @@ public:
     void sGUI();
     void onEnd() override;
 
-    void drawStraightRays(int num);
+    void drawStraightRays(int num, int direction);
+    int  checkSideIntersection(float mouseX, float mouseY);
     void drawCircularRays(glm::vec2 origin, unsigned int count);
+    void drawAimedRay(glm::vec2 startPos, glm::vec2 endPos);
 
-
+    void checkBorderCollision();
 
 };

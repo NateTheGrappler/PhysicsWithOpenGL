@@ -26,35 +26,36 @@ void BlackHole2D_Scene::init()
 	blackHole2D bh =
 	{
 		8.54 * std::pow(10, 36),
-		glm::vec3(400.0f, 450.0f, 0),
-		glm::vec3(1.0f, 0.0f, 2.0f),
-		80
-	};
-	blackHole2D bh1 =
-	{
-		4.8e42,
-		glm::vec3(400.0f, 150.0f, 0),
+		glm::vec3(400.0f, 300.0f, 0),
 		glm::vec3(1.0f, 0.0f, 2.0f),
 		80
 	};
 	m_blackHoles.push_back(bh);
-	m_blackHoles.push_back(bh1);
-
-	//drawStraightRays(100);
-	drawCircularRays(glm::vec2(200.0f, 200.0f), 128);
+	drawStraightRays(50, 0);
 
 }
 void BlackHole2D_Scene::update()
 {
-	//update the position of the light ray
-
-	if (!m_paused)
+	//polar ray step
+	if (!m_paused && m_usePolar)
 	{
-		for (int i = 0; i < m_lightRays.size(); i++)
+
+		for (int i = 0; i < m_lightRaysP.size(); i++)
 		{
-			if (m_lightRays[i].continueStep) { m_lightRays[i].step(m_engine.getDeltaTime(), m_blackHoles); }
+			if (m_lightRaysP[i].continueStep) { m_lightRaysP[i].step(m_engine.getDeltaTime(), m_blackHoles, m_lightSpeed); }
 		}
 	}
+
+	//cartesian ray step
+	if (!m_paused && !m_usePolar)
+	{
+		for (int i = 0; i < m_lightRaysC.size(); i++)
+		{
+			if (m_lightRaysC[i].continueStep) { m_lightRaysC[i].step(m_engine.getDeltaTime(), m_blackHoles, m_lightSpeed); }
+		}
+	}
+	checkBorderCollision();
+
 	sGUI();
 	sRender();
 }
@@ -73,9 +74,13 @@ void BlackHole2D_Scene::sRender()
 	{
 		m_engine.renderer()->drawCircle(blackHole.position, blackHole.getRenderRadius(), blackHole.color, glm::vec3(1.0f, 1.0f, 1.0f), 0, m_engine.assets()->getTexture(blackHole.texture));
 	}
-	for (int i = 0; i < m_lightRays.size(); i++)
+	for (int i = 0; i < m_lightRaysC.size(); i++)
 	{
-		m_engine.renderer()->drawTrail(m_lightRays[i].trail, m_lightRays[i].color);
+		m_engine.renderer()->drawTrail(m_lightRaysC[i].trail, m_lightRaysC[i].color);
+	}
+	for (int i = 0; i < m_lightRaysP.size(); i++)
+	{
+		m_engine.renderer()->drawTrail(m_lightRaysP[i].trail, m_lightRaysP[i].color);
 	}
 
 	glEnable(GL_DEPTH_TEST);
@@ -106,6 +111,34 @@ void BlackHole2D_Scene::sUserInput(const Action& action)
 			}
 		}
 		if (action.name() == "CHANGE_SCENE") { m_engine.changeScene("MENU", std::make_shared<Scene_Menu>(m_engine), false); onEnd(); }
+		
+		if (action.name() == "MOUSE_LEFT_CLICKED")
+		{
+			if (m_lightClickMode == 0)
+			{
+				//draw wall of light given direcction from side of screen
+				int direction = checkSideIntersection(action.pos().x, action.pos().y);
+				drawStraightRays(m_summonAmounts[0], direction);
+			}
+			if (m_lightClickMode == 1)
+			{
+				//draw rays in a circle around click
+				drawCircularRays(action.pos(), m_summonAmounts[1]);
+			}
+			if (m_lightClickMode == 2)
+			{
+				m_mouseStart = action.pos();
+			}
+			
+		}
+	}
+	if (action.type() == "RELEASED")
+	{
+		if (action.name() == "MOUSE_LEFT_CLICKED" && m_lightClickMode == 2)
+		{
+			//pass in saved stated on click, and then current state on release
+			drawAimedRay(m_mouseStart, action.pos()); 
+		}
 	}
 }
 void BlackHole2D_Scene::sGUI()
@@ -119,13 +152,12 @@ void BlackHole2D_Scene::sGUI()
 		if (ImGui::BeginTabItem("Light Rays"))
 		{
 
-			ImGui::Text("| Light Rays: %d", (int)m_lightRays.size());
+			ImGui::Text("| Light Rays: %d", (int)m_lightRaysC.size() + (int)m_lightRaysP.size());
 			ImGui::SameLine();
 			ImGui::Text("FPS: %.1f", m_engine.getFPS());
 			ImGui::Separator();
 
 			//-----------------------------------Ray Behavior-----------------------------
-
 			if (ImGui::CollapsingHeader("Ray Properties"))
 			{
 				static int rayMode = 0;
@@ -141,24 +173,24 @@ void BlackHole2D_Scene::sGUI()
 				//whether or not the draws disapear
 				ImGui::Text("Static Draw  :");
 				ImGui::SameLine();
-				if (ImGui::Checkbox("##static_draw", &m_staticDrawRays)) { }
+				if (ImGui::Checkbox("##static_drawC", &m_staticDrawRays)) { if (m_contiousSpawn) { m_contiousSpawn = false; } }
 
 				//the speed of the simulation
 				ImGui::Text("Light Speed  :");
 				ImGui::SameLine();
 				ImGui::SetNextItemWidth(200);
-				if (ImGui::SliderFloat("##slider_speed", &m_lightSpeed, 100.0f, 300.0f, "px/s: %.1f")) {}
+				if (ImGui::SliderFloat("##slider_speedC", &m_lightSpeed, 100.0f, 500.0f, "px/s: %.1f")) {}
 
 				//whether or not continously spawn the lights
 				ImGui::Text("Continous    :");
 				ImGui::SameLine();
-				if (ImGui::Checkbox("##continousSpawn", &m_contiousSpawn)) { if (m_staticDrawRays) { m_staticDrawRays = false; } }
+				if (ImGui::Checkbox("##continousSpawnC", &m_contiousSpawn)) { if (m_staticDrawRays) { m_staticDrawRays = false; } }
 
 				//the strength factor for the blackholes
 				ImGui::Text("Strength     :");
 				ImGui::SameLine();
 				ImGui::SetNextItemWidth(200);
-				if (ImGui::SliderFloat("##slider_strength", &m_attractionStrength, 0.7f, 1.5f, "g: %.1f")) {}
+				if (ImGui::SliderFloat("##slider_strengthC", &m_attractionStrength, 0.7f, 1.5f, "g: %.1f")) {}
 				ImGui::Separator();
 
 				//----------------------------Polar Coords--------------------------------------
@@ -172,12 +204,12 @@ void BlackHole2D_Scene::sGUI()
 
 				ImGui::Text("Static Draw  :");
 				ImGui::SameLine();
-				if (ImGui::Checkbox("##static_draw", &m_staticDrawRays)) {}
+				if (ImGui::Checkbox("##static_draw", &m_staticDrawRays)) { if (m_contiousSpawn) { m_contiousSpawn = false; } }
 
 				ImGui::Text("Light Speed  :");
 				ImGui::SameLine();
 				ImGui::SetNextItemWidth(200);
-				if (ImGui::SliderFloat("##slider_speed", &m_lightSpeed, 100.0f, 300.0f, "px/s: %.1f")) {}
+				if (ImGui::SliderFloat("##slider_speed", &m_lightSpeed, 100.0f, 500.0f, "px/s: %.1f")) {}
 
 				ImGui::Text("Continous    :");
 				ImGui::SameLine();
@@ -222,20 +254,10 @@ void BlackHole2D_Scene::sGUI()
 				ImGui::SetNextItemWidth(100);
 				if (ImGui::InputInt("##amount_aim", &m_summonAmounts[2], 0, 0), ImGuiInputTextFlags_ReadOnly) { m_summonAmounts[2] = 1; }
 
-				if (ImGui::Button("Clear Rays"))
-				{
-					m_lightRays.clear();
-				}
-				ImGui::SameLine();
-				if (ImGui::Button("Clear Black Holes"))
-				{
-					m_blackHoles.clear();
-				}
-				ImGui::SameLine();
-				if (ImGui::Button("Pause"))
-				{
-					m_paused = !m_paused;
-				}
+				//scene control buttons
+				if (ImGui::Button("Clear Rays"))        { m_lightRaysC.clear(); m_lightRaysP.clear();  } ImGui::SameLine();
+				if (ImGui::Button("Clear Black Holes")) { m_blackHoles.clear(); } ImGui::SameLine();
+				if (ImGui::Button("Pause"))             { m_paused = !m_paused; }
 			}
 
 
@@ -379,25 +401,133 @@ void BlackHole2D_Scene::onEnd()
 }
 
 //light related functions
-void BlackHole2D_Scene::drawStraightRays(int num)
+void BlackHole2D_Scene::drawStraightRays     (int num, int direction)
 {
-	m_lightRays.clear();
-
-	for (int i = 15; i < 600; i += 600/ num)
+	if (!m_contiousSpawn)
 	{
-		//set up a light ray
-		lightRayCartesian lr =
-		{
-			glm::vec3(0.0f, i, 0),
-			glm::vec3(1.0f, 1.0f, 1.0f),
-			glm::vec2(1.0f, 0.0f)
-		};
-		m_lightRays.push_back(lr);
+		m_lightRaysC.clear();
+		m_lightRaysP.clear();
 	}
+
+
+	float height  = m_engine.windowSize().y;
+	float width   = m_engine.windowSize().x;
+
+	//horizontal rays
+	if (direction == 0 || direction == 2)
+	{
+		for (int i = 15; i < height; i += height / num)
+		{
+			//----------------Right Side Rays-----------------
+			if      (m_usePolar && direction == 0)
+			{
+				lightRayPolar lr =
+				{
+					glm::vec3(0.0f, i, 0),
+					glm::vec3(1.0f, 1.0f, 1.0f),
+					glm::vec2(1.0f, 0.0f)
+				};
+				m_lightRaysP.push_back(lr);
+			}
+			else if (!m_usePolar && direction == 0)
+			{
+				lightRayCartesian lr =
+				{
+					glm::vec3(0.0f, i, 0),
+					glm::vec3(1.0f, 1.0f, 1.0f),
+					glm::vec2(1.0f, 0.0f)
+				};
+				m_lightRaysC.push_back(lr);
+			}
+
+			//----------------Left Side Rays-----------------
+			if      (m_usePolar && direction == 2)
+			{
+				lightRayPolar lr =
+				{
+					glm::vec3(width, i, 0),
+					glm::vec3(1.0f, 1.0f, 1.0f),
+					glm::vec2(-1.0f, 0.0f)
+				};
+				m_lightRaysP.push_back(lr);
+			}
+			else if (!m_usePolar && direction == 2)
+			{
+				lightRayCartesian lr =
+				{
+					glm::vec3(width, i, 0),
+					glm::vec3(1.0f, 1.0f, 1.0f),
+					glm::vec2(-1.0f, 0.0f)
+				};
+				m_lightRaysC.push_back(lr);
+			}
+		}
+	}
+	if (direction == 1 || direction == 3)
+	{
+		for (int i = 15; i < width; i += width / num)
+		{
+			//----------------Up Side Rays-----------------
+			if (m_usePolar && direction == 1)
+			{
+				lightRayPolar lr =
+				{
+					glm::vec3(i, height, 0),
+					glm::vec3(1.0f, 1.0f, 1.0f),
+					glm::vec2(0.0f, -1.0f)
+				};
+				m_lightRaysP.push_back(lr);
+			}
+			else if (!m_usePolar && direction == 1)
+			{
+				lightRayCartesian lr =
+				{
+					glm::vec3(i, height, 0),
+					glm::vec3(1.0f, 1.0f, 1.0f),
+					glm::vec2(0.0f, -1.0f)
+				};
+				m_lightRaysC.push_back(lr);
+			}
+
+			//----------------Down Side Rays-----------------
+			if (m_usePolar && direction == 3)
+			{
+				lightRayPolar lr =
+				{
+					glm::vec3(i, 0.0f, 0),
+					glm::vec3(1.0f, 1.0f, 1.0f),
+					glm::vec2(0.0f, 1.0f)
+				};
+				m_lightRaysP.push_back(lr);
+			}
+			else if (!m_usePolar && direction == 3)
+			{
+				lightRayCartesian lr =
+				{
+					glm::vec3(i, 0.0f, 0),
+					glm::vec3(1.0f, 1.0f, 1.0f),
+					glm::vec2(0.0f, 1.0f)
+				};
+				m_lightRaysC.push_back(lr);
+			}
+		}
+	}
+
 }
-void BlackHole2D_Scene::drawCircularRays(glm::vec2 origin, unsigned int count)
+int  BlackHole2D_Scene::checkSideIntersection(float mouseX, float mouseY)
 {
-	m_lightRays.clear();
+	if (mouseX > 0 && mouseX < 200)													{ return 0; } //right interaction:
+	if (mouseY < m_engine.windowSize().y && mouseY > m_engine.windowSize().y - 200) { return 1; } //top interaction	
+	if (mouseX < m_engine.windowSize().x && mouseX > m_engine.windowSize().x - 200) { return 2;  } //left interaction
+	if (mouseY > 0 && mouseY < 200)													{ return 3; } //bottom interaction
+}
+void BlackHole2D_Scene::drawCircularRays     (glm::vec2 origin, unsigned int count)
+{
+	if (!m_contiousSpawn)
+	{
+		m_lightRaysC.clear();
+		m_lightRaysP.clear();
+	}
 
 	for (int i = 0; i < count; i++)
 	{
@@ -405,14 +535,78 @@ void BlackHole2D_Scene::drawCircularRays(glm::vec2 origin, unsigned int count)
 		float x = cos(angle);
 		float y = sin(angle);
 
-		//set up a light ray
+		
+		if (m_usePolar)
+		{
+			lightRayPolar lr =
+			{
+				glm::vec3(origin.x, origin.y, 0),
+				glm::vec3(1.0f, 1.0f, 1.0f),
+				glm::vec2(x, y)
+			};
+			m_lightRaysP.push_back(lr);
+		}
+		else
+		{
+			lightRayCartesian lr =
+			{
+				glm::vec3(origin.x, origin.y, 0),
+				glm::vec3(1.0f, 1.0f, 1.0f),
+				glm::vec2(x, y)
+			};
+			m_lightRaysC.push_back(lr);
+		}
+	}
+}
+void BlackHole2D_Scene::drawAimedRay         (glm::vec2 startPos, glm::vec2 endPos)
+{
+	/*std::cout << "Start: " << startPos.x << " " << startPos.y
+		<< "End: " << endPos.x << " " << endPos.y << std::endl;*/
+
+	//calculate the direction of the ray
+	glm::vec2 direction = startPos - endPos;
+	glm::vec2 normalized = glm::normalize(direction);
+
+	//set up the light rays
+	if (m_usePolar)
+	{
+		lightRayPolar lr =
+		{
+			glm::vec3(startPos.x, startPos.y, 0),
+			glm::vec3(1.0f, 1.0f, 1.0f),
+			glm::vec2(normalized.x, normalized.y)
+		};
+		m_lightRaysP.push_back(lr);
+	}
+	else
+	{
 		lightRayCartesian lr =
 		{
-			glm::vec3(origin.x, origin.y, 0),
+			glm::vec3(startPos.x, startPos.y, 0),
 			glm::vec3(1.0f, 1.0f, 1.0f),
-			glm::vec2(x, y)
+			glm::vec2(normalized.x, normalized.y)
 		};
-		m_lightRays.push_back(lr);
+		m_lightRaysC.push_back(lr);
+	}
+
+}
+
+void BlackHole2D_Scene::checkBorderCollision()
+{
+	//check if each ray is visible within of the screen bounds
+	for (lightRayPolar& lr : m_lightRaysP)
+	{
+		if (lr.position.x < 0 || lr.position.x > m_engine.windowSize().x || lr.position.y < 0 || lr.position.y > m_engine.windowSize().y)
+		{
+			lr.continueStep = false;
+		}
+	}
+	for (lightRayCartesian& lr : m_lightRaysC)
+	{
+		if (lr.position.x < 0 || lr.position.x > m_engine.windowSize().x || lr.position.y < 0 || lr.position.y > m_engine.windowSize().y)
+		{
+			lr.continueStep = false;
+		}
 	}
 }
 
