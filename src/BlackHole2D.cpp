@@ -1,6 +1,7 @@
 ﻿#include "BlackHole2D.h"
 #include "Scene_Menu.h"
 #include <random>
+#include "BlackHole3D.h"
 
 BlackHole2D_Scene::BlackHole2D_Scene(Engine& gameEngine)
 	: Scene(gameEngine)

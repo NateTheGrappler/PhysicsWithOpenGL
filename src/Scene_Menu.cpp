@@ -16,6 +16,7 @@
 #include <string>
 #include <random>
 #include "BlackHole2D.h"
+#include "BlackHole3D.h"
 
 Scene_Menu::Scene_Menu(Engine& gameEngine)
     : Scene(gameEngine)
@@ -349,16 +350,16 @@ void Scene_Menu::drawSimulationName()
 void Scene_Menu::changeScene()
 {
     if (m_currentLookIndex == 0)  { m_engine.changeScene("2D_BLACK_HOLE", std::make_shared<BlackHole2D_Scene>(m_engine), false); }
-    if (m_currentLookIndex == 1)  { m_engine.changeScene("2D_BLACK_HOLE", std::make_shared<BlackHole2D_Scene>(m_engine), false); }
-    if (m_currentLookIndex == 2)  { m_engine.changeScene("2D_BLACK_HOLE", std::make_shared<BlackHole2D_Scene>(m_engine), false); }
-    if (m_currentLookIndex == 3)  { m_engine.changeScene("2D_BLACK_HOLE", std::make_shared<BlackHole2D_Scene>(m_engine), false); }
-    if (m_currentLookIndex == 4)  { m_engine.changeScene("2D_BLACK_HOLE", std::make_shared<BlackHole2D_Scene>(m_engine), false); }
-    if (m_currentLookIndex == 5)  { m_engine.changeScene("2D_BLACK_HOLE", std::make_shared<BlackHole2D_Scene>(m_engine), false); }
-    if (m_currentLookIndex == 6)  { m_engine.changeScene("2D_BLACK_HOLE", std::make_shared<BlackHole2D_Scene>(m_engine), false); }
-    if (m_currentLookIndex == 7)  { m_engine.changeScene("2D_BLACK_HOLE", std::make_shared<BlackHole2D_Scene>(m_engine), false); }
-    if (m_currentLookIndex == 8)  { m_engine.changeScene("2D_BLACK_HOLE", std::make_shared<BlackHole2D_Scene>(m_engine), false); }
-    if (m_currentLookIndex == 9)  { m_engine.changeScene("2D_BLACK_HOLE", std::make_shared<BlackHole2D_Scene>(m_engine), false); }
-    if (m_currentLookIndex == 10) { m_engine.changeScene("2D_BLACK_HOLE", std::make_shared<BlackHole2D_Scene>(m_engine), false); }
+    if (m_currentLookIndex == 1)  { m_engine.changeScene("3D_BLACK_HOLE", std::make_shared<BlackHole3D_Scene>(m_engine), false); }
+    if (m_currentLookIndex == 2)  { m_engine.changeScene("3D_BLACK_HOLE", std::make_shared<BlackHole3D_Scene>(m_engine), false); }
+    if (m_currentLookIndex == 3)  { m_engine.changeScene("3D_BLACK_HOLE", std::make_shared<BlackHole3D_Scene>(m_engine), false); }
+    if (m_currentLookIndex == 4)  { m_engine.changeScene("3D_BLACK_HOLE", std::make_shared<BlackHole3D_Scene>(m_engine), false); }
+    if (m_currentLookIndex == 5)  { m_engine.changeScene("3D_BLACK_HOLE", std::make_shared<BlackHole3D_Scene>(m_engine), false); }
+    if (m_currentLookIndex == 6)  { m_engine.changeScene("3D_BLACK_HOLE", std::make_shared<BlackHole3D_Scene>(m_engine), false); }
+    if (m_currentLookIndex == 7)  { m_engine.changeScene("3D_BLACK_HOLE", std::make_shared<BlackHole3D_Scene>(m_engine), false); }
+    if (m_currentLookIndex == 8)  { m_engine.changeScene("3D_BLACK_HOLE", std::make_shared<BlackHole3D_Scene>(m_engine), false); }
+    if (m_currentLookIndex == 9)  { m_engine.changeScene("3D_BLACK_HOLE", std::make_shared<BlackHole3D_Scene>(m_engine), false); }
+    if (m_currentLookIndex == 10) { m_engine.changeScene("3D_BLACK_HOLE", std::make_shared<BlackHole3D_Scene>(m_engine), false); }
 }
 
 void Scene_Menu::initStars()

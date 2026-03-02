@@ -137,6 +137,7 @@
     <ClCompile Include="src\Scene.cpp" />
     <ClCompile Include="src\Scene_Menu.cpp" />
     <ClCompile Include="src\texture.cpp" />
+    <ClCompile Include="src\BlackHole3D.cpp" />
     <ClCompile Include="src\vendor\glad.c" />
     <ClCompile Include="src\vendor\imGui\imgui.cpp" />
     <ClCompile Include="src\vendor\imGui\imgui_draw.cpp" />
@@ -149,6 +150,7 @@
     <ClInclude Include="src\Action.hpp" />
     <ClInclude Include="src\AssetManager.hpp" />
     <ClInclude Include="src\BlackHole2D.h" />
+    <ClInclude Include="src\BlackHole3D.h" />
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\Engine.h" />
     <ClInclude Include="src\Renderer.h" />

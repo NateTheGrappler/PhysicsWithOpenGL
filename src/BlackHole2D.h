@@ -301,7 +301,7 @@ public:
 
 
 private:
-    std::vector<blackHole2D> m_blackHoles;
+    std::vector<blackHole2D>          m_blackHoles;
     std::vector<lightRayCartesian>    m_lightRaysC;
     std::vector<lightRayPolar>        m_lightRaysP;
     double m_renderScale = 1e-11;   //to scale things down from meters to pixels
