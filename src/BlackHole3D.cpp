@@ -62,7 +62,7 @@ void BlackHole3D_Scene::sRender()
 		m_engine.renderer()->drawSphere(bh.position, 1.75f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0, m_engine.assets()->getTexture("VenusDirt"));
 
 	}
-	m_engine.renderer()->drawCurvedGrid(30, 0.5f, positions, magntiudes, glm::vec3(0.5f, 0.5f, 0.5f));
+	m_engine.renderer()->drawCurvedGrid(50, 0.5f, positions, magntiudes, glm::vec3(0.5f, 0.5f, 0.5f));
 	m_engine.renderer()->disableLight();
 
 }
@@ -168,7 +168,7 @@ void BlackHole3D_Scene::sGUI()
 
 						ImGui::SameLine();
 						ImGui::SetNextItemWidth(controlWidth * 1.5f); // Sliders can be wider
-						if (ImGui::SliderFloat("##slider_x", &bh.position.x, -3, 3, "px: %.1f")) {}
+						if (ImGui::SliderFloat("##slider_x", &bh.position.x, -10, 10, "px: %.1f")) {}
 
 						// Y input and slider
 						ImGui::Text("Y:");
@@ -178,7 +178,7 @@ void BlackHole3D_Scene::sGUI()
 
 						ImGui::SameLine();
 						ImGui::SetNextItemWidth(controlWidth * 1.5f);
-						if (ImGui::SliderFloat("##slider_y", &bh.position.y, -3, 3, "px: %.1f")) {}
+						if (ImGui::SliderFloat("##slider_y", &bh.position.y, -10, 10, "px: %.1f")) {}
 
 						// z input and slider
 						ImGui::Text("Z:");
@@ -188,7 +188,7 @@ void BlackHole3D_Scene::sGUI()
 
 						ImGui::SameLine();
 						ImGui::SetNextItemWidth(controlWidth * 1.5f);
-						if (ImGui::SliderFloat("##slider_z", &bh.position.z, -3, 3, "px: %.1f")) {}
+						if (ImGui::SliderFloat("##slider_z", &bh.position.z, -10, 10, "px: %.1f")) {}
 
 						//-----------------------------Resizing-------------------------------------
 						ImGui::Separator();

@@ -21,6 +21,7 @@ void Renderer::init()
 	initTrail();
 	initCube();
 	initSphere();
+	initGrid();
 
 	//for rendering stars in menu
 	glEnable(GL_PROGRAM_POINT_SIZE);
@@ -255,6 +256,19 @@ void Renderer::initText(const std::string& fontpath)
 	glEnableVertexAttribArray(0);
 	glBindVertexArray(0);
 }
+void Renderer::initGrid()
+{
+	glGenVertexArrays(1, &m_gridVAO);
+	glBindVertexArray(m_gridVAO);
+
+	glGenBuffers(1, &m_gridVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_gridVBO);
+	glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_DYNAMIC_DRAW); //empty buffer allows for dynamic grid size
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	glBindVertexArray(0);
+}
 void Renderer::initLine()
 {
 	glGenVertexArrays(1, &m_lineVAO);
@@ -486,31 +500,63 @@ void Renderer::drawCurvedGrid(int gridSize, float spacing, std::vector<glm::vec3
 
 
 	float halfsize = gridSize * spacing / 2;
-	//x axis
+	
+	std::vector<float> verticies;
+	verticies.reserve(gridSize * (gridSize + 1) * 2 * 2 * 3); //allocate the space based on 2 verticies in line with 3 floats each
+
+	//x lines
 	for (int i = 0; i <= gridSize; i++)
 	{
 		float z = -halfsize + i * spacing;
-		for (int j = 0; j < gridSize; j++)
+		for(int j = 0; j <= gridSize; j++)
 		{
+			//calculate the start and end points for the line
 			float x1 = -halfsize + j * spacing;
 			float x2 = -halfsize + (j + 1) * spacing;
-			drawLine(glm::vec3(x1, calcY(x1, z), z), glm::vec3(x2, calcY(x2, z), z), color);
+
+			//push both points back at the given z axis in the grid, alongside the displaced y
+			verticies.push_back(x1);
+			verticies.push_back(calcY(x1, z));
+			verticies.push_back(z);
+
+			verticies.push_back(x2);
+			verticies.push_back(calcY(x2, z));
+			verticies.push_back(z);
 		}
 	}
 
-	//z axis
+	//z lines
 	for (int i = 0; i <= gridSize; i++)
 	{
 		float x = -halfsize + i * spacing;
-		for (int j = 0; j < gridSize; j++)
+		for (int j = 0; j <= gridSize; j++)
 		{
 			float z1 = -halfsize + j * spacing;
-			float z2 = -halfsize + (j+1) * spacing;
-			drawLine(glm::vec3(x, calcY(x, z1), z1), glm::vec3(x, calcY(x, z2), z2), color);
+			float z2 = -halfsize + (j + 1) * spacing;
 
+			verticies.push_back(x);
+			verticies.push_back(calcY(x, z1));
+			verticies.push_back(z1);
+
+			verticies.push_back(x);
+			verticies.push_back(calcY(x, z2));
+			verticies.push_back(z2);
 		}
-
 	}
+
+
+	//draw call to render the actual grid that was set up
+	m_lineShader.use();
+	m_lineShader.setMat4("model", glm::mat4(1.0f));
+	m_lineShader.setMat4("view", m_view);
+	m_lineShader.setMat4("projection", m_projection);
+	m_lineShader.setVec3("color", color);
+
+	glBindVertexArray(m_gridVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_gridVBO);
+	glBufferData(GL_ARRAY_BUFFER, verticies.size() * sizeof(float), verticies.data(), GL_DYNAMIC_DRAW);
+	glDrawArrays(GL_LINES, 0, verticies.size() / 3);
+	glBindVertexArray(0);
 }
 
 

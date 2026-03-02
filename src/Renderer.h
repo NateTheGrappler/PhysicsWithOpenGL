@@ -49,6 +49,7 @@ private:
 	//3d items
 	unsigned int m_sphereVAO, m_sphereVBO, m_sphereIBO, m_sphereIndexCount;
 	unsigned int m_cubeVAO,   m_cubeVBO,   m_cubeIBO,   m_cubeIndexCount;
+	unsigned int m_gridVAO,   m_gridVBO;
 
 	//text
 	std::map<char, Character> m_characters;
@@ -80,6 +81,7 @@ public:
 	void initRectangle();
 	void initTriangle();
 	void initText(const std::string& fontpath);
+	void initGrid();
 	void initLine();
 
 	//draw call functions that take the data and output it to the screen for 2d items
