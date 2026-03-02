@@ -38,6 +38,7 @@ public:
 	virtual void setOrthographic(float left, float right, float bottom, float top, float near, float far) = 0;
 	virtual void setPosition(const glm::vec3& position) = 0;
 	virtual void setPerspective () = 0;
+	virtual glm::vec3 getLookAt() const = 0;
 	virtual void enableMouse(GLFWwindow* window) = 0;
 	virtual void disableMouse(GLFWwindow* window) = 0;
 	virtual void printPosition() = 0;
@@ -79,6 +80,7 @@ public:
 	//functions that change the view of the camera
 	void setOrthographic(float left, float right, float bottom, float top, float near, float far) override;
 	void setPerspective() override;
+	glm::vec3 getLookAt() const override;
 	void setPosition(const glm::vec3& position) override;
 	glm::vec3 getPosition() const override;
 	void printPosition() override;
@@ -122,6 +124,7 @@ public:
 
 	//functions to handle flying around
 	void updateCameraVectors();
+	glm::vec3 getLookAt() const override;
 	void enableMouse(GLFWwindow* window)  override;
 	void disableMouse(GLFWwindow* window) override;
 	void printPosition() override;

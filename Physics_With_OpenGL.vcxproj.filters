@@ -135,6 +135,7 @@
     <None Include="src\res\shader\text.shader" />
     <None Include="src\res\shader\trail.shader" />
     <None Include="README.md" />
+    <None Include="src\res\shader\line.shader" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="src\res\texture\VenusDirt.png">

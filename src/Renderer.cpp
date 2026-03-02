@@ -4,7 +4,8 @@ Renderer::Renderer()
 	:m_normalShader("src/res/shader/basic.shader"),
 	m_starShader("src/res/shader/starShader.shader"),
 	m_textShader("src/res/shader/text.shader"),
-	m_trailShader("src/res/shader/trail.shader")
+	m_trailShader("src/res/shader/trail.shader"),
+	m_lineShader("src/res/shader/line.shader")
 {
 	init();
 }
@@ -256,7 +257,16 @@ void Renderer::initText(const std::string& fontpath)
 }
 void Renderer::initLine()
 {
+	glGenVertexArrays(1, &m_lineVAO);
+	glBindVertexArray(m_lineVAO);
 
+	glGenBuffers(1, &m_lineVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_lineVBO);
+	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	glBindVertexArray(0);
 }
 
 
@@ -335,8 +345,26 @@ void Renderer::drawRect(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 	glBindVertexArray(0);
 }
-void Renderer::drawLine(glm::vec2 start, glm::vec2(), glm::vec3 color, std::shared_ptr<Texture> texture)
+void Renderer::drawLine(glm::vec3 start, glm::vec3 end, glm::vec3 color)
 {
+	float vertices[] =
+	{
+		start.x, start.y, start.z,
+		end.x,   end.y,   end.z
+	};
+
+	m_lineShader.use();
+	m_lineShader.setMat4("model", glm::mat4(1.0f));
+	m_lineShader.setMat4("view", m_view);
+	m_lineShader.setMat4("projection", m_projection);
+	m_lineShader.setVec3("color", color);
+
+	glBindVertexArray(m_lineVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_lineVBO);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+	glDrawArrays(GL_LINES, 0, 2);
+	glBindVertexArray(0);
+
 
 }
 void Renderer::drawTriangle(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 rotate, float angle, std::shared_ptr<Texture> texture)
@@ -418,6 +446,71 @@ void Renderer::drawText(std::string text, glm::vec2 position, float scale, glm::
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
+}
+
+void Renderer::drawGrid(int gridSize, float spacing, glm::vec3 color)
+{
+	float halfsize = gridSize * spacing / 2;
+
+	//x axis
+	for (int i = 0; i <= gridSize; i++)
+	{
+		float pos = -halfsize + i * spacing;
+		drawLine(glm::vec3(-halfsize, 0.0f, pos), glm::vec3(halfsize, 0.0f, pos), color);
+	}
+
+	//z axis
+	for (int i = 0; i <= gridSize; i++)
+	{
+		float pos = -halfsize + i * spacing;
+		drawLine(glm::vec3(pos, 0.0f, -halfsize), glm::vec3(pos, 0.0f, halfsize), color);
+	}
+}
+
+void Renderer::drawCurvedGrid(int gridSize, float spacing, std::vector<glm::vec3>& positions, std::vector<float>& magnitudes, glm::vec3 color)
+{
+
+	//function to get the y displacement that occures between the grid and the mass objects based on the magnitude
+	auto calcY = [&](float x, float z) -> float
+		{
+			float totalDisplacement = 0.0f;
+			for (int i = 0; i < positions.size(); i++)
+			{
+				float dx = x - positions[i].x;
+				float dz = z - positions[i].z;
+				float dist = sqrt(dx * dx + dz * dz);
+				totalDisplacement -= magnitudes[i] / (dist + 0.5f);
+			}
+			return totalDisplacement;
+		};
+
+
+	float halfsize = gridSize * spacing / 2;
+	//x axis
+	for (int i = 0; i <= gridSize; i++)
+	{
+		float z = -halfsize + i * spacing;
+		for (int j = 0; j < gridSize; j++)
+		{
+			float x1 = -halfsize + j * spacing;
+			float x2 = -halfsize + (j + 1) * spacing;
+			drawLine(glm::vec3(x1, calcY(x1, z), z), glm::vec3(x2, calcY(x2, z), z), color);
+		}
+	}
+
+	//z axis
+	for (int i = 0; i <= gridSize; i++)
+	{
+		float x = -halfsize + i * spacing;
+		for (int j = 0; j < gridSize; j++)
+		{
+			float z1 = -halfsize + j * spacing;
+			float z2 = -halfsize + (j+1) * spacing;
+			drawLine(glm::vec3(x, calcY(x, z1), z1), glm::vec3(x, calcY(x, z2), z2), color);
+
+		}
+
+	}
 }
 
 

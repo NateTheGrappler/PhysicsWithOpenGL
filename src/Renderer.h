@@ -59,6 +59,7 @@ private:
 	Shader m_starShader;
 	Shader m_textShader;
 	Shader m_trailShader;
+	Shader m_lineShader;
 
 	//matricies
 	glm::mat4 m_projection;
@@ -84,9 +85,11 @@ public:
 	//draw call functions that take the data and output it to the screen for 2d items
 	void drawCircle(glm::vec3 position, float radius,   glm::vec3 color, glm::vec3 roation = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, std::shared_ptr<Texture> texture = nullptr);
 	void drawRect(  glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 roation = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, std::shared_ptr<Texture> texture = nullptr, glm::vec2 textureScale = glm::vec2(1.0f, 1.0f));
-	void drawLine(  glm::vec2 start,    glm::vec2(),    glm::vec3 color, std::shared_ptr<Texture> texture = nullptr);
+	void drawLine(glm::vec3 start, glm::vec3 end, glm::vec3 color);
 	void drawTriangle(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 roation = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, std::shared_ptr<Texture> texture = nullptr);
 	void drawText(std::string text, glm::vec2 position, float scale, glm::vec3 color);
+	void drawGrid(int gridsize, float spacing, glm::vec3 color);
+	void drawCurvedGrid(int gridsize, float spacing, std::vector<glm::vec3>& positions, std::vector<float>& magnitudes, glm::vec3 color);
 
 	//-------------------------------------FUNCTIONS DEALING WITH 3D--------------------------------------------
 	void initSphere(int sectors = 36, int stacks = 18);

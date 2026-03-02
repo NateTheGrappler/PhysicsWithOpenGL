@@ -1,6 +1,9 @@
 
 #include "Camera.h"
 #include <iostream>
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 
 //-----------------------------Static Camera Functions------------------------------
 
@@ -46,6 +49,11 @@ void staticCamera::setPerspective()
 	m_isOrtho = false;
 }
 
+glm::vec3 staticCamera::getLookAt() const
+{
+	return glm::vec3(m_target.x, m_target.y, m_target.z);
+}
+
 void staticCamera::setPosition(const glm::vec3& position)
 {
 	m_position = position;
@@ -89,48 +97,59 @@ flyCamera::flyCamera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
 
 void flyCamera::processInput(GLFWwindow* window, float deltaTime)
 {
+	ImGuiIO& io = ImGui::GetIO();
 
-	glfwGetWindowSize(window, &m_windowWidth, &m_windowHeight);
-
-	//handle the camera movement stuff
-	double xpos, ypos;
-	glfwGetCursorPos(window, &xpos, &ypos);
-
-	if (m_firstMouse)
+	// mouse look - only while holding right click
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
 	{
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		glfwGetWindowSize(window, &m_windowWidth, &m_windowHeight);
+
+		double xpos, ypos;
+		glfwGetCursorPos(window, &xpos, &ypos);
+
+		if (m_firstMouse)
+		{
+			m_lastX = xpos;
+			m_lastY = ypos;
+			m_firstMouse = false;
+		}
+
+		float xOffset = (xpos - m_lastX) * m_mouseSensitivity;
+		float yOffset = (m_lastY - ypos) * m_mouseSensitivity;
 		m_lastX = xpos;
 		m_lastY = ypos;
-		m_firstMouse = false;
+
+		m_yaw += xOffset;
+		m_pitch += yOffset;
+		m_pitch = glm::clamp(m_pitch, -89.0f, 89.0f);
+		updateCameraVectors();
+	}
+	else
+	{
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		m_firstMouse = true;
 	}
 
-	float xOffset = (xpos - m_lastX) * m_mouseSensitivity;
-	float yOffset = (m_lastY - ypos) * m_mouseSensitivity;
-
-	m_lastX = xpos;
-	m_lastY = ypos;
-
-	m_yaw += xOffset;
-	m_pitch += yOffset;
-	m_pitch = glm::clamp(m_pitch, -89.0f, 89.0f);
-	updateCameraVectors();
-
-
-	//The things that handle the keyboard movement
-	float velocity = m_movementSpeed * deltaTime;
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		m_cameraPos += velocity * m_cameraFront;
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		m_cameraPos -= velocity * m_cameraFront;
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		m_cameraPos -= glm::normalize(glm::cross(m_cameraFront, m_cameraUp)) * velocity;
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		m_cameraPos += glm::normalize(glm::cross(m_cameraFront, m_cameraUp)) * velocity;
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-		m_cameraPos += m_cameraUp * velocity;
-	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-		m_cameraPos -= m_cameraUp * velocity;
+	// keyboard movement - outside right click block so it always works
+	// only blocked when actually typing in an imgui text field
+	if (!io.WantTextInput)
+	{
+		float velocity = m_movementSpeed * deltaTime;
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+			m_cameraPos += velocity * m_cameraFront;
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+			m_cameraPos -= velocity * m_cameraFront;
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+			m_cameraPos -= glm::normalize(glm::cross(m_cameraFront, m_cameraUp)) * velocity;
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+			m_cameraPos += glm::normalize(glm::cross(m_cameraFront, m_cameraUp)) * velocity;
+		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+			m_cameraPos += m_cameraUp * velocity;
+		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+			m_cameraPos -= m_cameraUp * velocity;
+	}
 }
-
 glm::mat4 flyCamera::getViewMatrix()
 {
 	if (m_isOrtho)
@@ -178,14 +197,20 @@ void flyCamera::updateCameraVectors()
 	m_cameraUp = glm::normalize(glm::cross(m_cameraRight, m_cameraFront));
 }
 
+glm::vec3 flyCamera::getLookAt() const
+{
+	return glm::vec3(m_cameraFront.x, m_cameraFront.y, m_cameraFront.z);
+}
+
 void flyCamera::enableMouse(GLFWwindow* window)
 {
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-	m_firstMouse = true;
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    m_firstMouse = true;
 }
 void flyCamera::disableMouse(GLFWwindow* window)
 {
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	m_firstMouse = true;
 }
 
 void flyCamera::printPosition()
