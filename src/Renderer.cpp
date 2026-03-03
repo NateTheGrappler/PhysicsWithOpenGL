@@ -5,7 +5,8 @@ Renderer::Renderer()
 	m_starShader("src/res/shader/starShader.shader"),
 	m_textShader("src/res/shader/text.shader"),
 	m_trailShader("src/res/shader/trail.shader"),
-	m_lineShader("src/res/shader/line.shader")
+	m_lineShader("src/res/shader/line.shader"),
+	m_rayTracingShader("src/res/shader/raytrace.shader")
 {
 	init();
 }
@@ -22,6 +23,9 @@ void Renderer::init()
 	initCube();
 	initSphere();
 	initGrid();
+
+	initQuad();
+	initCubeMap(512);
 
 	//for rendering stars in menu
 	glEnable(GL_PROGRAM_POINT_SIZE);
@@ -480,8 +484,7 @@ void Renderer::drawGrid(int gridSize, float spacing, glm::vec3 color)
 		drawLine(glm::vec3(pos, 0.0f, -halfsize), glm::vec3(pos, 0.0f, halfsize), color);
 	}
 }
-
-void Renderer::drawCurvedGrid(int gridSize, float spacing, std::vector<glm::vec3>& positions, std::vector<float>& magnitudes, glm::vec3 color)
+void Renderer::drawCurvedGrid(int gridSize, float spacing, std::vector<glm::vec3>& positions, std::vector<float>& magnitudes, std::vector<float>& radius, glm::vec3 color)
 {
 
 	//function to get the y displacement that occures between the grid and the mass objects based on the magnitude
@@ -493,7 +496,7 @@ void Renderer::drawCurvedGrid(int gridSize, float spacing, std::vector<glm::vec3
 				float dx = x - positions[i].x;
 				float dz = z - positions[i].z;
 				float dist = sqrt(dx * dx + dz * dz);
-				totalDisplacement -= magnitudes[i] / (dist + 0.5f);
+				totalDisplacement -= magnitudes[i] / (dist / radius[i] + 0.5f);
 			}
 			return totalDisplacement;
 		};
@@ -636,6 +639,89 @@ void Renderer::initSphere(int sectors, int stacks)
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+
+	glBindVertexArray(0);
+}
+void Renderer::initTorus(float innerRadius, float outerRadius, int rings, int segments)
+{
+	std::vector<float> verticies;
+	std::vector<unsigned int> indices;
+
+	// For a proper accretion disk that surrounds the black hole:
+	// innerRadius = distance from black hole center to inner edge of disk
+	// outerRadius = distance from black hole center to outer edge of disk
+
+	// The tube radius determines how thick the disk is vertically
+	float tubeRadius = outerRadius * 0.4f;  // Make tube much thicker (40% of outer radius)
+	float centerRadius = innerRadius + (outerRadius - innerRadius) * 0.3f;  // Offset center outward
+
+	for (int i = 0; i <= rings; i++)
+	{
+		float theta = 2.0f * glm::pi<float>() * i / rings;
+		float cosTheta = cos(theta);
+		float sinTheta = sin(theta);
+
+		for (int j = 0; j <= segments; j++)
+		{
+			float phi = 2.0f * glm::pi<float>() * j / segments;
+			float cosPhi = cos(phi);
+			float sinPhi = sin(phi);
+
+			// Scale the vertical component to make the disk flare out
+			float verticalScale = 1.0f + 0.5f * cosPhi;  // Makes top/bottom thicker
+
+			// Position: this creates a proper donut that surrounds the black hole
+			float x = (centerRadius + tubeRadius * cosPhi) * cosTheta;
+			float y = tubeRadius * sinPhi * 1.5f;  // Increased vertical thickness
+			float z = (centerRadius + tubeRadius * cosPhi) * sinTheta;
+
+			// Normals
+			float nx = cosPhi * cosTheta;
+			float ny = sinPhi;
+			float nz = cosPhi * sinTheta;
+
+			// Texture coordinates
+			float u = float(i) / rings;
+			float v = float(j) / segments;
+
+			verticies.push_back(x);  verticies.push_back(y);  verticies.push_back(z);
+			verticies.push_back(nx); verticies.push_back(ny); verticies.push_back(nz);
+			verticies.push_back(u);  verticies.push_back(v);
+		}
+	}
+
+	// Create indices for triangle strips
+	for (int i = 0; i < rings; i++)
+	{
+		for (int j = 0; j < segments; j++)
+		{
+			int a = i * (segments + 1) + j;
+			int b = a + segments + 1;
+
+			indices.push_back(a);     indices.push_back(b);     indices.push_back(a + 1);
+			indices.push_back(b);     indices.push_back(b + 1); indices.push_back(a + 1);
+		}
+	}
+
+	m_torusIndexCount = indices.size();
+
+	glGenVertexArrays(1, &m_torusVAO);
+	glBindVertexArray(m_torusVAO);
+
+	glGenBuffers(1, &m_torusVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_torusVBO);
+	glBufferData(GL_ARRAY_BUFFER, verticies.size() * sizeof(float), verticies.data(), GL_STATIC_DRAW);
+
+	glGenBuffers(1, &m_torusIBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_torusIBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
@@ -809,7 +895,155 @@ void Renderer::drawStars(unsigned int VAO, unsigned starCount, const glm::vec3& 
 	glDepthMask(GL_TRUE);
 }
 
+void Renderer::drawTorus(glm::vec3 position, float innerRadius, float outerRadius, float rotationAngle, std::shared_ptr<Texture> texture)
+{
+	m_normalShader.use();
+	m_normalShader.setUniformFloat("ambientStrength",  1.0f);
+	m_normalShader.setUniformFloat("diffuseStrength",  1.0f);
+	m_normalShader.setUniformFloat("specularStrength", 1.0f);
 
+	if (texture)
+	{
+		texture->bind(0);
+		m_normalShader.setUniformInt("useTexture", 1);
+		m_normalShader.setUniformInt("tex", 0);
+	}
+	else
+	{
+		m_normalShader.setUniformInt("useTexture", 0);
+	}
+
+	float scale = outerRadius / 2.0f;
+
+	//set up matrix stuff
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(position.x, position.y, position.z));
+	model = glm::scale(model, glm::vec3(scale, scale * 0.1f, scale));
+	model = glm::rotate(model, rotationAngle, glm::vec3(0.0f, 1.0f, 0.0f));
+
+	//toss all of this information over to the shader
+	m_normalShader.setMat4("model", model);
+	m_normalShader.setMat4("view", m_view);
+	m_normalShader.setMat4("projection", m_projection);
+	m_normalShader.setVec3("color", glm::vec3(1.0f, 0.6f, 0.1f));
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glBindVertexArray(m_torusVAO);
+	glDrawElements(GL_TRIANGLES, m_torusIndexCount, GL_UNSIGNED_INT, nullptr);
+	glBindVertexArray(0);
+
+	glDisable(GL_BLEND);
+}
+
+//for 3d black holes
+void Renderer::drawBlackHoleSphere(glm::vec3 position, float radius)
+{
+	m_normalShader.use();
+	//set everything to zero so the black hole has no light at all, and is yk, black
+	m_normalShader.setUniformInt("useTexture", 0);
+	m_normalShader.setUniformFloat("ambientStrength",  0.0f);
+	m_normalShader.setUniformFloat("diffuseStrength",  0.0f);
+	m_normalShader.setUniformFloat("specularStrength", 0.0f);
+
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, position);
+	model = glm::scale(model, glm::vec3(radius));
+
+	m_normalShader.setMat4("model", model);
+	m_normalShader.setMat4("view", m_view);
+	m_normalShader.setMat4("projection", m_projection);
+	m_normalShader.setVec3("color", glm::vec3(0.0f, 0.0f, 0.0f));
+
+	glBindVertexArray(m_sphereVAO);
+	glDrawElements(GL_TRIANGLES, m_sphereIndexCount, GL_UNSIGNED_INT, nullptr);
+	glBindVertexArray(0);
+}
+void Renderer::initCubeMap(int resolution)
+{
+	m_cubeMapResolution = resolution;
+
+	// generate cubemap texture
+	glGenTextures(1, &m_cubeMapTexture);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeMapTexture);
+
+	for (int i = 0; i < 6; i++)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB,
+			resolution, resolution, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+	}
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	// generate FBO
+	glGenFramebuffers(1, &m_cubeMapFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_cubeMapFBO);
+
+	// generate and attach renderbuffer for depth WHILE FBO is bound
+	glGenRenderbuffers(1, &m_cubeMapRBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, m_cubeMapRBO);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, resolution, resolution);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_cubeMapRBO);
+
+	// check it worked
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Cubemap framebuffer not complete!" << std::endl;
+
+	// CRITICAL - unbind so nothing else accidentally renders into it
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+}
+void Renderer::initQuad()
+{
+	float quadVertices[] =
+	{
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		-1.0f, -1.0f,  0.0f, 0.0f,
+		 1.0f, -1.0f,  1.0f, 0.0f,
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		 1.0f, -1.0f,  1.0f, 0.0f,
+		 1.0f,  1.0f,  1.0f, 1.0f
+	};
+
+
+	glGenVertexArrays(1, &m_quadVAO);
+	glBindVertexArray(m_quadVAO);
+	glGenBuffers(1, &m_quadVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_quadVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+	glBindVertexArray(0);
+}
+void Renderer::drawRayTracedBlackHole(glm::vec3 bhPos, float bhRadius, glm::vec3 camPos, glm::mat4 view, glm::mat4 projection)
+{
+	m_rayTracingShader.use();
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeMapTexture);
+	m_rayTracingShader.setUniformInt("sceneCubemap", 0);
+
+	m_rayTracingShader.setVec3("cameraPos", camPos);
+	m_rayTracingShader.setVec3("blackHolePos", bhPos);
+	m_rayTracingShader.setMat4("invView", glm::inverse(view));
+	m_rayTracingShader.setMat4("invProjection", glm::inverse(projection));
+	m_rayTracingShader.setUniformFloat("blackHoleRadius", bhRadius);
+
+	glDisable(GL_DEPTH_TEST);
+	glBindVertexArray(m_quadVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+	glEnable(GL_DEPTH_TEST);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
 
 //-------------------------------Asthetics------------------------------------
 
@@ -866,10 +1100,49 @@ void Renderer::initTrail()
 
 	glBindVertexArray(0);
 }
+void Renderer::drawTrail3D(std::vector<glm::vec3>& positions, glm::vec3 color)
+{
+	m_trailShader.use();
+	m_trailShader.setMat4("projection", m_projection);
+	m_trailShader.setMat4("model",      glm::mat4(1.0f));
+	m_trailShader.setMat4("view",       m_view);
+
+	std::vector<float> vertices;
+
+	if (positions.empty()) { return; }
+
+	for (int i = 0; i < positions.size(); i++)
+	{
+		float alpha = (float)i / positions.size();
+
+		vertices.push_back(positions[i].x);
+		vertices.push_back(positions[i].y);
+		vertices.push_back(positions[i].z);
+		vertices.push_back(color.r);
+		vertices.push_back(color.g);
+		vertices.push_back(color.b);
+		vertices.push_back(alpha);
+	}
+
+	glBindVertexArray(m_trailVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_trailVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), vertices.data(), GL_DYNAMIC_DRAW);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glLineWidth(2.0f);
+	glDrawArrays(GL_LINE_STRIP, 0, positions.size());
+
+	glDisable(GL_BLEND);
+	glBindVertexArray(0);
+}
 void Renderer::drawTrail(std::vector<glm::vec2>& positions, glm::vec3 color)
 {
 	m_trailShader.use();
 	m_trailShader.setMat4("projection", m_projection);
+	m_trailShader.setMat4("view",       glm::mat4(1.0f));
+	m_trailShader.setMat4("model",      glm::mat4(1.0f));
 
 	std::vector<float> vertices;
 

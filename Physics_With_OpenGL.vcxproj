@@ -173,6 +173,7 @@
     <None Include="README.md" />
     <None Include="src\res\shader\basic.shader" />
     <None Include="src\res\shader\line.shader" />
+    <None Include="src\res\shader\raytrace.shader" />
     <None Include="src\res\shader\starShader.shader" />
     <None Include="src\res\shader\text.shader" />
     <None Include="src\res\shader\trail.shader" />

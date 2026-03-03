@@ -49,6 +49,7 @@ private:
 	//3d items
 	unsigned int m_sphereVAO, m_sphereVBO, m_sphereIBO, m_sphereIndexCount;
 	unsigned int m_cubeVAO,   m_cubeVBO,   m_cubeIBO,   m_cubeIndexCount;
+	unsigned int m_torusVAO,  m_torusVBO,  m_torusIBO,  m_torusIndexCount;
 	unsigned int m_gridVAO,   m_gridVBO;
 
 	//text
@@ -61,6 +62,7 @@ private:
 	Shader m_textShader;
 	Shader m_trailShader;
 	Shader m_lineShader;
+	Shader m_rayTracingShader;
 
 	//matricies
 	glm::mat4 m_projection;
@@ -70,6 +72,13 @@ private:
 	
 
 public:
+
+	//3d blackhole shit
+	int m_cubeMapResolution;
+	unsigned int m_cubeMapFBO, m_cubeMapRBO, m_cubeMapTexture;
+	unsigned int m_quadVAO, m_quadVBO;
+
+
 	Renderer();
 
 	void init();
@@ -91,16 +100,24 @@ public:
 	void drawTriangle(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 roation = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, std::shared_ptr<Texture> texture = nullptr);
 	void drawText(std::string text, glm::vec2 position, float scale, glm::vec3 color);
 	void drawGrid(int gridsize, float spacing, glm::vec3 color);
-	void drawCurvedGrid(int gridsize, float spacing, std::vector<glm::vec3>& positions, std::vector<float>& magnitudes, glm::vec3 color);
+	void drawCurvedGrid(int gridsize, float spacing, std::vector<glm::vec3>& positions, std::vector<float>& magnitudes, std::vector<float>& radius, glm::vec3 color);
 
 	//-------------------------------------FUNCTIONS DEALING WITH 3D--------------------------------------------
 	void initSphere(int sectors = 36, int stacks = 18);
 	void initCube();
+	void initTorus(float innerRadius, float outerRadius, int rings, int segments);
 	//void initLine(); maybe have like a plane call to demonstrate the distorition of spacetime?
 	
 	void drawSphere(glm::vec3 position, float radius, glm::vec3 color, glm::vec3 rotate = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, std::shared_ptr<Texture> texture = nullptr);
 	void drawCube(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 roation = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, std::shared_ptr<Texture> texture = nullptr);
 	void drawStars(unsigned int VAO, unsigned starCount, const glm::vec3& cameraPos);
+	void drawTorus(glm::vec3 position, float innerRadius, float outerRadius, float rotationAngle, std::shared_ptr<Texture> texture = nullptr);
+
+	//for 3d blackholes
+	void drawBlackHoleSphere(glm::vec3 position, float radius);
+	void initCubeMap(int resolution);
+	void initQuad();
+	void drawRayTracedBlackHole(glm::vec3 bhPos, float bhRadius, glm::vec3 camPos, glm::mat4 view, glm::mat4 projection);
 
 	//Additional functions
 	void clear();
@@ -113,5 +130,6 @@ public:
 
 	void initTrail();
 	void drawTrail(std::vector<glm::vec2>& positions, glm::vec3 color);
+	void drawTrail3D(std::vector<glm::vec3>& positions, glm::vec3 color);
 
 };

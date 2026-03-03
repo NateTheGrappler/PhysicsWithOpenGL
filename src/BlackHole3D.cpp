@@ -15,7 +15,8 @@ void BlackHole3D_Scene::init()
 	m_camera->disableMouse(m_engine.getWindow());
 
 	registerAction(GLFW_KEY_ENTER, "CHANGE_SCENE");
-	registerAction(GLFW_KEY_C,   "CHANGE_CAMERA");
+	registerAction(GLFW_KEY_C,     "CHANGE_CAMERA");
+	registerAction(GLFW_KEY_P,     "PAUSE");
 
 
 	//lighting set up
@@ -32,39 +33,117 @@ void BlackHole3D_Scene::init()
 		5.0f
 	};
 	m_blackHoles.push_back(bh);
+
+	//set up some cool background star objects
+	m_bgStars.push_back({ glm::vec3( 3.0f, 5.0f,   0.0f), 0.5f, glm::vec3(0.2f, 0.4f, 1.0f) });  // blue
+	m_bgStars.push_back({ glm::vec3(-3.0f, 5.0f,   0.0f), 0.3f, glm::vec3(1.0f, 0.3f, 0.1f) });  // orange
+	m_bgStars.push_back({ glm::vec3( 0.0f, 5.0f,   2.0f), 0.15f, glm::vec3(0.1f, 0.8f, 0.3f) }); // green
+
+
+	//set up rays
+	//initRays(10, 0.5f);
+	//initStars(2000);
 }
 
 void BlackHole3D_Scene::update()
 {
+	for (lightRay3D& lr : m_lightRays)
+	{
+		if (lr.continueStep && !m_paused) { lr.step(m_engine.getDeltaTime(), m_blackHoles); }
+	}
+
+
 	sRender();
 	sGUI();
 }
 
 void BlackHole3D_Scene::sRender()
 {
-	m_engine.renderer()->clear();
 	m_camera->processInput(m_engine.getWindow(), m_engine.getDeltaTime());
-
 	m_camera->setPerspective();
-	m_engine.renderer()->updateMatrix(m_camera->getProjectionMatrix(), m_camera->getViewMatrix(), m_camera->getPosition());
-	m_engine.renderer()->setLight(m_pointLight);
 
-	//std::cout << m_engine.getFPS() << std::endl;
+	glm::vec3 bhPos = m_blackHoles[0].position;
 
-	//set up data to pass into space time grid
+	glm::mat4 captureProj = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
+	glm::mat4 captureViews[] =
+	{
+		glm::lookAt(bhPos, bhPos + glm::vec3(1, 0, 0), glm::vec3(0,-1, 0)),
+		glm::lookAt(bhPos, bhPos + glm::vec3(-1, 0, 0), glm::vec3(0,-1, 0)),
+		glm::lookAt(bhPos, bhPos + glm::vec3(0, 1, 0), glm::vec3(0, 0, 1)),
+		glm::lookAt(bhPos, bhPos + glm::vec3(0,-1, 0), glm::vec3(0, 0,-1)),
+		glm::lookAt(bhPos, bhPos + glm::vec3(0, 0, 1), glm::vec3(0,-1, 0)),
+		glm::lookAt(bhPos, bhPos + glm::vec3(0, 0,-1), glm::vec3(0,-1, 0)),
+	};
+
 	std::vector<glm::vec3> positions;
-	std::vector<float>     magntiudes;
+	std::vector<float>     magnitudes;
+	std::vector<float>     radii;
 	for (const BlackHole3D& bh : m_blackHoles)
 	{
 		positions.push_back(bh.position);
-		magntiudes.push_back(bh.gridMag);
-		//draw blackhole
-		m_engine.renderer()->drawSphere(bh.position, 1.75f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0, m_engine.assets()->getTexture("VenusDirt"));
-
+		magnitudes.push_back(bh.gridMag);
+		radii.push_back(bh.radius);
 	}
-	m_engine.renderer()->drawCurvedGrid(50, 0.5f, positions, magntiudes, glm::vec3(0.5f, 0.5f, 0.5f));
-	m_engine.renderer()->disableLight();
 
+	//------------------------------------------------------
+	// PASS 1 - render scene into cubemap (no grid)
+	//------------------------------------------------------
+	for (int face = 0; face < 6; face++)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, m_engine.renderer()->m_cubeMapFBO);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+			GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
+			m_engine.renderer()->m_cubeMapTexture, 0);
+
+		glViewport(0, 0, 512, 512);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		m_engine.renderer()->updateMatrix(captureProj, captureViews[face], bhPos);
+		m_engine.renderer()->setLight(m_pointLight);
+
+		// only draw objects that should be lensed - NOT the grid
+		for (lightRay3D& lr : m_lightRays)
+			m_engine.renderer()->drawTrail3D(lr.trail, lr.color);
+
+		//m_engine.renderer()->drawStars(m_starVAO, m_starCount, bhPos);
+
+		for (const backGroundStar& bgStar : m_bgStars)
+		{
+			m_engine.renderer()->drawSphere(bgStar.position, bgStar.radius, bgStar.color);
+		}
+
+		m_engine.renderer()->disableLight();
+	}
+
+	//------------------------------------------------------
+	// PASS 2 - ray trace fullscreen quad to screen
+	//------------------------------------------------------
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glm::ivec2 windowSize = m_engine.windowSize();
+	glViewport(0, 0, windowSize.x, windowSize.y);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	m_engine.renderer()->updateMatrix(
+		m_camera->getProjectionMatrix(),
+		m_camera->getViewMatrix(),
+		m_camera->getPosition()
+	);
+
+	m_engine.renderer()->drawRayTracedBlackHole(
+		bhPos,
+		m_blackHoles[0].radius,
+		m_camera->getPosition(),
+		m_camera->getViewMatrix(),
+		m_camera->getProjectionMatrix()
+	);
+
+	//------------------------------------------------------
+	// PASS 3 - draw grid on top with normal camera matrices
+	// depth test is re-enabled after ray trace so this works correctly
+	//------------------------------------------------------
+	m_engine.renderer()->setLight(m_pointLight);
+	m_engine.renderer()->drawCurvedGrid(50, 0.5f, positions, magnitudes, radii, glm::vec3(0.5f, 0.5f, 0.5f));
+	m_engine.renderer()->disableLight();
 }
 
 void BlackHole3D_Scene::sUserInput(const Action& action)
@@ -103,9 +182,12 @@ void BlackHole3D_Scene::sUserInput(const Action& action)
 				m_isCameraStatic = true;
 			}
 		}
+		if (action.name() == "PAUSE")
+		{
+			m_paused = !m_paused;
+		}
 	}
 }
-
 void BlackHole3D_Scene::sGUI()
 {
 
@@ -195,8 +277,14 @@ void BlackHole3D_Scene::sGUI()
 						ImGui::Text("Scale: ");
 						ImGui::SameLine();
 						ImGui::SetNextItemWidth(200);
-						float pixelRadius = 80;
-						//if (ImGui::SliderFloat("##slider_scale", &pixelRadius, 1, 160, "px: %.1f")) { bh.calculateRenderScale(pixelRadius); }
+						if (ImGui::SliderFloat("##slider_scale", &bh.radius, 0.5, 2.5, "px: %.1f")) { }
+
+
+						ImGui::Separator();
+						ImGui::Text("Magnitude: ");
+						ImGui::SameLine();
+						ImGui::SetNextItemWidth(200);
+						if (ImGui::SliderFloat("##slider_mag", &bh.gridMag, 0.5, 20, "kge10: %.1f")) { }
 
 						ImGui::TreePop();
 					}
@@ -213,6 +301,84 @@ void BlackHole3D_Scene::sGUI()
 	ImGui::End();
 }
 
+
+
 void BlackHole3D_Scene::onEnd()
 {
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glm::ivec2 windowSize = m_engine.windowSize();
+	glViewport(0, 0, windowSize.x, windowSize.y);
 }
+
+void BlackHole3D_Scene::initRays(int gridSize, float spacing)
+{
+	//create a grid of the rays based on the specified values
+
+	//halfsize so the grid starts at a middle origin
+	float halfsize = gridSize * spacing / 2;
+
+	for (int y = 0; y <= gridSize; y++)
+	{
+		float yPos = -halfsize + y * spacing;
+		for (int z = 0; z <= gridSize; z++)
+		{
+			float zPos = -halfsize + z * spacing;
+
+			lightRay3D lr =
+			{
+				glm::vec3(-10.0f, yPos + 5, zPos),
+				glm::vec3(1.0f, 0.0f, 0.0f),
+				glm::vec3(0.7f, 0.7f, 0.0f)
+			};
+			m_lightRays.push_back(lr);
+		}
+	}
+}
+void BlackHole3D_Scene::initStars(int count)
+{
+	std::vector<float> starVertices;
+	srand(42); // fixed seed so stars don't move each run
+
+	for (int i = 0; i < count; i++)
+	{
+		// random point on a sphere surface using spherical coordinates
+		float theta = ((float)rand() / RAND_MAX) * 2.0f * glm::pi<float>();
+		float phi = acos(1.0f - 2.0f * ((float)rand() / RAND_MAX));
+		float r = 30.0f + ((float)rand() / RAND_MAX) * 20.0f; // between 30 and 50 units out
+
+		float x = r * sin(phi) * cos(theta);
+		float y = r * sin(phi) * sin(theta);
+		float z = r * cos(phi);
+
+		// position
+		starVertices.push_back(x);
+		starVertices.push_back(y);
+		starVertices.push_back(z);
+
+		// random brightness for color (white to slightly yellow/blue)
+		float brightness = 0.6f + ((float)rand() / RAND_MAX) * 0.4f;
+		starVertices.push_back(brightness);
+		starVertices.push_back(brightness);
+		starVertices.push_back(brightness + ((float)rand() / RAND_MAX) * 0.1f);
+	}
+
+	m_starCount = count;
+
+	glGenVertexArrays(1, &m_starVAO);
+	glBindVertexArray(m_starVAO);
+
+	glGenBuffers(1, &m_starVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_starVBO);
+	glBufferData(GL_ARRAY_BUFFER, starVertices.size() * sizeof(float), starVertices.data(), GL_STATIC_DRAW);
+
+	// position
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	// color
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	glBindVertexArray(0);
+}
+
