@@ -63,6 +63,7 @@ private:
 	Shader m_trailShader;
 	Shader m_lineShader;
 	Shader m_rayTracingShader;
+	Shader m_bgStarShader;
 
 	//matricies
 	glm::mat4 m_projection;
@@ -111,13 +112,13 @@ public:
 	void drawSphere(glm::vec3 position, float radius, glm::vec3 color, glm::vec3 rotate = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, std::shared_ptr<Texture> texture = nullptr);
 	void drawCube(glm::vec3 position, glm::vec2 size, glm::vec3 color, glm::vec3 roation = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, std::shared_ptr<Texture> texture = nullptr);
 	void drawStars(unsigned int VAO, unsigned starCount, const glm::vec3& cameraPos);
-	void drawTorus(glm::vec3 position, float innerRadius, float outerRadius, float rotationAngle, std::shared_ptr<Texture> texture = nullptr);
 
 	//for 3d blackholes
 	void drawBlackHoleSphere(glm::vec3 position, float radius);
 	void initCubeMap(int resolution);
 	void initQuad();
 	void drawRayTracedBlackHole(glm::vec3 bhPos, float bhRadius, glm::vec3 camPos, glm::mat4 view, glm::mat4 projection);
+	void drawBackGroundStarGlow(glm::vec3 position, float size, glm::vec3 color);
 
 	//Additional functions
 	void clear();

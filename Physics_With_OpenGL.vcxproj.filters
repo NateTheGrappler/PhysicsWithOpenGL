@@ -137,6 +137,7 @@
     <None Include="README.md" />
     <None Include="src\res\shader\line.shader" />
     <None Include="src\res\shader\raytrace.shader" />
+    <None Include="src\res\shader\bgStar.shader" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="src\res\texture\VenusDirt.png">

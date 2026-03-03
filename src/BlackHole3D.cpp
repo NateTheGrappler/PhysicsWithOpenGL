@@ -35,14 +35,17 @@ void BlackHole3D_Scene::init()
 	m_blackHoles.push_back(bh);
 
 	//set up some cool background star objects
-	m_bgStars.push_back({ glm::vec3( 3.0f, 5.0f,   0.0f), 0.5f, glm::vec3(0.2f, 0.4f, 1.0f) });  // blue
-	m_bgStars.push_back({ glm::vec3(-3.0f, 5.0f,   0.0f), 0.3f, glm::vec3(1.0f, 0.3f, 0.1f) });  // orange
-	m_bgStars.push_back({ glm::vec3( 0.0f, 5.0f,   2.0f), 0.15f, glm::vec3(0.1f, 0.8f, 0.3f) }); // green
+	m_bgStars.push_back({ glm::vec3(4.0f,   5.0f,  2.0f), 0.1f, glm::vec3(0.2f, 0.4f, 1.0f) }); // blue   - right side
+	m_bgStars.push_back({ glm::vec3(-4.0f,  5.0f,  2.0f), 0.1f, glm::vec3(1.0f, 0.3f, 0.1f) }); // orange - left side
+	m_bgStars.push_back({ glm::vec3(0.0f,   5.0f,  2.0f), 0.1f, glm::vec3(0.1f, 0.8f, 0.3f) }); // green  - above
+	m_bgStars.push_back({ glm::vec3(0.0f,   5.0f,  2.0f), 0.1f, glm::vec3(0.9f, 0.9f, 0.2f) }); // yellow - below
+	m_bgStars.push_back({ glm::vec3(3.0f,   5.0f,  2.0f), 0.1f, glm::vec3(0.8f, 0.1f, 0.8f) }); // purple - upper right
+	m_bgStars.push_back({ glm::vec3(-3.0f,  5.0f,  2.0f), 0.1f, glm::vec3(0.1f, 0.9f, 0.9f) }); // cyan   - lower left
 
 
 	//set up rays
 	//initRays(10, 0.5f);
-	//initStars(2000);
+	initStars(2000);
 }
 
 void BlackHole3D_Scene::update()
@@ -95,21 +98,22 @@ void BlackHole3D_Scene::sRender()
 			GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
 			m_engine.renderer()->m_cubeMapTexture, 0);
 
-		glViewport(0, 0, 512, 512);
+		glViewport(0, 0, 1024, 1024);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		m_engine.renderer()->updateMatrix(captureProj, captureViews[face], bhPos);
 		m_engine.renderer()->setLight(m_pointLight);
 
-		// only draw objects that should be lensed - NOT the grid
 		for (lightRay3D& lr : m_lightRays)
 			m_engine.renderer()->drawTrail3D(lr.trail, lr.color);
 
-		//m_engine.renderer()->drawStars(m_starVAO, m_starCount, bhPos);
+		m_engine.renderer()->drawStars(m_starVAO, m_starCount, bhPos);
 
 		for (const backGroundStar& bgStar : m_bgStars)
 		{
 			m_engine.renderer()->drawSphere(bgStar.position, bgStar.radius, bgStar.color);
+			m_engine.renderer()->drawBackGroundStarGlow(bgStar.position, bgStar.radius * 4.0f, bgStar.color);
+
 		}
 
 		m_engine.renderer()->disableLight();

@@ -6,7 +6,8 @@ Renderer::Renderer()
 	m_textShader("src/res/shader/text.shader"),
 	m_trailShader("src/res/shader/trail.shader"),
 	m_lineShader("src/res/shader/line.shader"),
-	m_rayTracingShader("src/res/shader/raytrace.shader")
+	m_rayTracingShader("src/res/shader/raytrace.shader"),
+	m_bgStarShader("src/res/shader/bgStar.shader")
 {
 	init();
 }
@@ -25,7 +26,7 @@ void Renderer::init()
 	initGrid();
 
 	initQuad();
-	initCubeMap(512);
+	initCubeMap(1024);
 
 	//for rendering stars in menu
 	glEnable(GL_PROGRAM_POINT_SIZE);
@@ -895,48 +896,6 @@ void Renderer::drawStars(unsigned int VAO, unsigned starCount, const glm::vec3& 
 	glDepthMask(GL_TRUE);
 }
 
-void Renderer::drawTorus(glm::vec3 position, float innerRadius, float outerRadius, float rotationAngle, std::shared_ptr<Texture> texture)
-{
-	m_normalShader.use();
-	m_normalShader.setUniformFloat("ambientStrength",  1.0f);
-	m_normalShader.setUniformFloat("diffuseStrength",  1.0f);
-	m_normalShader.setUniformFloat("specularStrength", 1.0f);
-
-	if (texture)
-	{
-		texture->bind(0);
-		m_normalShader.setUniformInt("useTexture", 1);
-		m_normalShader.setUniformInt("tex", 0);
-	}
-	else
-	{
-		m_normalShader.setUniformInt("useTexture", 0);
-	}
-
-	float scale = outerRadius / 2.0f;
-
-	//set up matrix stuff
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(position.x, position.y, position.z));
-	model = glm::scale(model, glm::vec3(scale, scale * 0.1f, scale));
-	model = glm::rotate(model, rotationAngle, glm::vec3(0.0f, 1.0f, 0.0f));
-
-	//toss all of this information over to the shader
-	m_normalShader.setMat4("model", model);
-	m_normalShader.setMat4("view", m_view);
-	m_normalShader.setMat4("projection", m_projection);
-	m_normalShader.setVec3("color", glm::vec3(1.0f, 0.6f, 0.1f));
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glBindVertexArray(m_torusVAO);
-	glDrawElements(GL_TRIANGLES, m_torusIndexCount, GL_UNSIGNED_INT, nullptr);
-	glBindVertexArray(0);
-
-	glDisable(GL_BLEND);
-}
-
 //for 3d black holes
 void Renderer::drawBlackHoleSphere(glm::vec3 position, float radius)
 {
@@ -1043,6 +1002,26 @@ void Renderer::drawRayTracedBlackHole(glm::vec3 bhPos, float bhRadius, glm::vec3
 	glEnable(GL_DEPTH_TEST);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+void Renderer::drawBackGroundStarGlow(glm::vec3 position, float size, glm::vec3 color)
+{
+	m_bgStarShader.use();
+	m_bgStarShader.setVec3("starPos", position);
+	m_bgStarShader.setVec3("glowColor", color);
+	m_bgStarShader.setMat4("view", m_view);
+	m_bgStarShader.setMat4("projection", m_projection);
+	m_bgStarShader.setUniformFloat("starSize", size);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glDepthMask(GL_FALSE);
+
+	glBindVertexArray(m_quadVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+
+	glDepthMask(GL_TRUE);
+	glDisable(GL_BLEND);
 }
 
 //-------------------------------Asthetics------------------------------------
