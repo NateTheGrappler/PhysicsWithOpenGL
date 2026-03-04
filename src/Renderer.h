@@ -106,7 +106,6 @@ public:
 	//-------------------------------------FUNCTIONS DEALING WITH 3D--------------------------------------------
 	void initSphere(int sectors = 36, int stacks = 18);
 	void initCube();
-	void initTorus(float innerRadius, float outerRadius, int rings, int segments);
 	//void initLine(); maybe have like a plane call to demonstrate the distorition of spacetime?
 	
 	void drawSphere(glm::vec3 position, float radius, glm::vec3 color, glm::vec3 rotate = glm::vec3(1.0f, 1.0f, 1.0f), float angle = 0, std::shared_ptr<Texture> texture = nullptr);
@@ -117,8 +116,11 @@ public:
 	void drawBlackHoleSphere(glm::vec3 position, float radius);
 	void initCubeMap(int resolution);
 	void initQuad();
+	void initTorus(float innerRadius, float outerRadius, int rings, int segments);
 	void drawRayTracedBlackHole(glm::vec3 bhPos, float bhRadius, glm::vec3 camPos, glm::mat4 view, glm::mat4 projection);
 	void drawBackGroundStarGlow(glm::vec3 position, float size, glm::vec3 color);
+	void drawTorus(glm::vec3 position, float innerRadius, float outerRadius, float rotationAngle, std::shared_ptr<Texture> texture = nullptr);
+
 
 	//Additional functions
 	void clear();

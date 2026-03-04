@@ -6,10 +6,10 @@ struct BlackHole3D
     std::string name    = "TON618";
     std::string texture = "BlackHoleSide";
     float gridMag;   //set up to showcase the "gravity" by bending the space time grid in scene
-    float radius = 2.0f;   
+    float radius = 1.0f;   
 
-    float diskInner = 2.2f; //for rendering torus disk
-    float diskOutter = 4.5f;
+    float diskInner = 1.4f; //for rendering torus disk
+    float diskOutter = 3.5f;
 
     void setRadius(float newRadius)
     {

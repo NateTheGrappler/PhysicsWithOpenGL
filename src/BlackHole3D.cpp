@@ -55,7 +55,6 @@ void BlackHole3D_Scene::update()
 		if (lr.continueStep && !m_paused) { lr.step(m_engine.getDeltaTime(), m_blackHoles); }
 	}
 
-
 	sRender();
 	sGUI();
 }
@@ -115,6 +114,14 @@ void BlackHole3D_Scene::sRender()
 			m_engine.renderer()->drawBackGroundStarGlow(bgStar.position, bgStar.radius * 4.0f, bgStar.color);
 
 		}
+
+		// accretion disk
+		m_engine.renderer()->drawTorus(
+			m_blackHoles[0].position,
+			m_blackHoles[0].diskInner,
+			m_blackHoles[0].diskOutter,
+			(float)glfwGetTime() * 0.3f
+		);
 
 		m_engine.renderer()->disableLight();
 	}

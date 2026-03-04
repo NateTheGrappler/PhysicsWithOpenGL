@@ -24,7 +24,7 @@ void Renderer::init()
 	initCube();
 	initSphere();
 	initGrid();
-
+	initTorus(1.0f, 2.0f, 64, 32);
 	initQuad();
 	initCubeMap(1024);
 
@@ -647,16 +647,13 @@ void Renderer::initSphere(int sectors, int stacks)
 }
 void Renderer::initTorus(float innerRadius, float outerRadius, int rings, int segments)
 {
-	std::vector<float> verticies;
+	std::vector<float>        vertices;
 	std::vector<unsigned int> indices;
 
-	// For a proper accretion disk that surrounds the black hole:
-	// innerRadius = distance from black hole center to inner edge of disk
-	// outerRadius = distance from black hole center to outer edge of disk
-
-	// The tube radius determines how thick the disk is vertically
-	float tubeRadius = outerRadius * 0.4f;  // Make tube much thicker (40% of outer radius)
-	float centerRadius = innerRadius + (outerRadius - innerRadius) * 0.3f;  // Offset center outward
+	// r = distance from center of tube to center of torus ring
+	// t = radius of the tube itself
+	float r = (innerRadius + outerRadius) / 2.0f;
+	float t = (outerRadius - innerRadius) / 2.0f;
 
 	for (int i = 0; i <= rings; i++)
 	{
@@ -670,36 +667,32 @@ void Renderer::initTorus(float innerRadius, float outerRadius, int rings, int se
 			float cosPhi = cos(phi);
 			float sinPhi = sin(phi);
 
-			// Scale the vertical component to make the disk flare out
-			float verticalScale = 1.0f + 0.5f * cosPhi;  // Makes top/bottom thicker
+			// vertex position
+			float x = (r + t * cosPhi) * cosTheta;
+			float y = t * sinPhi;
+			float z = (r + t * cosPhi) * sinTheta;
 
-			// Position: this creates a proper donut that surrounds the black hole
-			float x = (centerRadius + tubeRadius * cosPhi) * cosTheta;
-			float y = tubeRadius * sinPhi * 1.5f;  // Increased vertical thickness
-			float z = (centerRadius + tubeRadius * cosPhi) * sinTheta;
-
-			// Normals
+			// normal points away from the tube center
 			float nx = cosPhi * cosTheta;
 			float ny = sinPhi;
 			float nz = cosPhi * sinTheta;
 
-			// Texture coordinates
-			float u = float(i) / rings;
-			float v = float(j) / segments;
+			// texture coordinates
+			float u = (float)i / rings;
+			float v = (float)j / segments;
 
-			verticies.push_back(x);  verticies.push_back(y);  verticies.push_back(z);
-			verticies.push_back(nx); verticies.push_back(ny); verticies.push_back(nz);
-			verticies.push_back(u);  verticies.push_back(v);
+			vertices.push_back(x);  vertices.push_back(y);  vertices.push_back(z);
+			vertices.push_back(nx); vertices.push_back(ny); vertices.push_back(nz);
+			vertices.push_back(u);  vertices.push_back(v);
 		}
 	}
 
-	// Create indices for triangle strips
 	for (int i = 0; i < rings; i++)
 	{
 		for (int j = 0; j < segments; j++)
 		{
 			int a = i * (segments + 1) + j;
-			int b = a + segments + 1;
+			int b = a + (segments + 1);
 
 			indices.push_back(a);     indices.push_back(b);     indices.push_back(a + 1);
 			indices.push_back(b);     indices.push_back(b + 1); indices.push_back(a + 1);
@@ -713,7 +706,7 @@ void Renderer::initTorus(float innerRadius, float outerRadius, int rings, int se
 
 	glGenBuffers(1, &m_torusVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, m_torusVBO);
-	glBufferData(GL_ARRAY_BUFFER, verticies.size() * sizeof(float), verticies.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 
 	glGenBuffers(1, &m_torusIBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_torusIBO);
@@ -885,9 +878,9 @@ void Renderer::drawStars(unsigned int VAO, unsigned starCount, const glm::vec3& 
 
 	glm::mat4 model = glm::mat4(1.0f);
 
-	m_normalShader.setMat4("model", model);
-	m_normalShader.setMat4("view", m_view);
-	m_normalShader.setMat4("projection", m_projection);
+	m_starShader.setMat4("model", model);
+	m_starShader.setMat4("view", m_view);
+	m_starShader.setMat4("projection", m_projection);
 
 	glDepthMask(GL_FALSE);
 	glBindVertexArray(VAO);
@@ -1022,6 +1015,50 @@ void Renderer::drawBackGroundStarGlow(glm::vec3 position, float size, glm::vec3 
 
 	glDepthMask(GL_TRUE);
 	glDisable(GL_BLEND);
+}
+void Renderer::drawTorus(glm::vec3 position, float innerRadius, float outerRadius, float rotationAngle, std::shared_ptr<Texture> texture)
+{
+	m_normalShader.use();
+	m_normalShader.setUniformFloat("ambientStrength", 1.0f);
+	m_normalShader.setUniformFloat("diffuseStrength", 0.0f);
+	m_normalShader.setUniformFloat("specularStrength", 0.0f);
+	m_normalShader.setUniformInt("useTexture", 0);
+	m_normalShader.setUniformInt("isDisk", 1);
+
+	m_normalShader.setVec3("diskCenter", position);
+	m_normalShader.setUniformFloat("diskInnerRadius", innerRadius);
+	m_normalShader.setUniformFloat("diskOuterRadius", outerRadius);
+
+	// scale XZ to match outer radius, keep Y very flat for disk appearance
+	float xyScale = outerRadius;
+	float yScale = outerRadius * 0.05f; // very thin
+
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, position);
+	model = glm::scale(model, glm::vec3(xyScale, yScale, xyScale));
+	model = glm::rotate(model, rotationAngle, glm::vec3(0.0f, 1.0f, 0.0f));
+
+	m_normalShader.setMat4("model", model);
+	m_normalShader.setMat4("view", m_view);
+	m_normalShader.setMat4("projection", m_projection);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glEnable(GL_CULL_FACE);
+
+	glBindVertexArray(m_torusVAO);
+	glCullFace(GL_FRONT);
+	glDrawElements(GL_TRIANGLES, m_torusIndexCount, GL_UNSIGNED_INT, nullptr);
+	glCullFace(GL_BACK);
+	glDrawElements(GL_TRIANGLES, m_torusIndexCount, GL_UNSIGNED_INT, nullptr);
+
+	glBindVertexArray(0);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
+
+	m_normalShader.setUniformInt("isDisk", 0);
+	m_normalShader.setUniformFloat("diskOuterRadius", 0.0f);
+	m_normalShader.setUniformFloat("diskInnerRadius", 0.0f);
 }
 
 //-------------------------------Asthetics------------------------------------
